@@ -77,4 +77,20 @@ export class AppConfigService {
   get isProduction(): boolean {
     return this.nodeEnv === 'production';
   }
+
+  get authDevLogOtp(): boolean {
+    return this.config.getOrThrow<boolean>('authDevLogOtp');
+  }
+
+  get seedSuperAdminEmail(): string | undefined {
+    return this.config.get<string>('seedSuperAdminEmail');
+  }
+
+  get seedSuperAdminPassword(): string | undefined {
+    return this.config.get<string>('seedSuperAdminPassword');
+  }
+
+  get seedDemoPassword(): string | undefined {
+    return this.config.get<string>('seedDemoPassword');
+  }
 }

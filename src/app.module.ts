@@ -8,6 +8,10 @@ import { AppConfigModule } from './config/config.module';
 import { DatabaseModule } from './database/database.module';
 import { HealthModule } from './health/health.module';
 import { AppLoggerModule } from './logger/logger.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { AuthorizationModule } from './modules/authorization/authorization.module';
+import { OrganizationsModule } from './modules/organizations/organizations.module';
+import { UsersModule } from './modules/users/users.module';
 import { QueuesModule } from './queues/queues.module';
 import { RedisModule } from './redis/redis.module';
 import { AppThrottlerModule } from './redis/throttler.module';
@@ -20,6 +24,10 @@ import { AppThrottlerModule } from './redis/throttler.module';
     DatabaseModule,
     QueuesModule,
     AppThrottlerModule,
+    OrganizationsModule,
+    AuthorizationModule,
+    UsersModule,
+    AuthModule,
     HealthModule,
   ],
   providers: [

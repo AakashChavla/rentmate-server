@@ -56,5 +56,12 @@ describe('validateEnv', () => {
         JWT_REFRESH_SECRET: 'same-secret-value',
       }),
     ).toThrow(/JWT_REFRESH_SECRET/);
+    expect(() =>
+      validateEnv({
+        ...validEnv,
+        NODE_ENV: 'production',
+        AUTH_DEV_LOG_OTP: 'true',
+      }),
+    ).toThrow(/AUTH_DEV_LOG_OTP/);
   });
 });

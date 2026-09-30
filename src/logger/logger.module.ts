@@ -28,7 +28,15 @@ function createLoggerParams(config: AppConfigService): Params {
   const pinoHttp: Options = {
     level: config.nodeEnv === 'development' ? 'debug' : 'info',
     redact: {
-      paths: ['req.headers.authorization', 'req.headers.cookie'],
+      paths: [
+        'req.headers.authorization',
+        'req.headers.cookie',
+        'res.headers["set-cookie"]',
+        'req.body.password',
+        'req.body.currentPassword',
+        'req.body.newPassword',
+        'req.body.code',
+      ],
       remove: true,
     },
     autoLogging: {

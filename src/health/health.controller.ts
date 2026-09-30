@@ -2,10 +2,12 @@ import { Controller, Get, VERSION_NEUTRAL } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { HealthCheck, HealthCheckService, TypeOrmHealthIndicator } from '@nestjs/terminus';
 import { SkipThrottle } from '@nestjs/throttler';
+import { Public } from '../common/decorators/public.decorator';
 import { SkipEnvelope } from '../common/decorators/skip-envelope.decorator';
 import { RedisHealthIndicator } from './redis.health';
 
 @ApiTags('health')
+@Public()
 @SkipThrottle()
 @SkipEnvelope()
 @Controller({ path: 'health', version: VERSION_NEUTRAL })

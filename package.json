@@ -26,6 +26,8 @@
     "migration:generate": "typeorm-ts-node-commonjs migration:generate -d src/database/data-source.ts",
     "migration:run": "typeorm-ts-node-commonjs migration:run -d src/database/data-source.ts",
     "migration:revert": "typeorm-ts-node-commonjs migration:revert -d src/database/data-source.ts",
+    "seed": "ts-node src/database/seeds/run-seed.ts",
+    "test:e2e": "jest --config ./test/jest-e2e.json",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -64,11 +66,13 @@
     "@nestjs/common": "11",
     "@nestjs/config": "4",
     "@nestjs/core": "11",
+    "@nestjs/jwt": "11",
     "@nestjs/platform-express": "11",
     "@nestjs/swagger": "11",
     "@nestjs/terminus": "11",
     "@nestjs/throttler": "^6.7.1",
     "@nestjs/typeorm": "11",
+    "argon2": "^0.45.1",
     "bullmq": "^6.3.10",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",

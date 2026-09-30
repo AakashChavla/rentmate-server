@@ -50,6 +50,10 @@ services:
       JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3001}
       PAYMENT_GATEWAY: ${PAYMENT_GATEWAY:-razorpay}
+      AUTH_DEV_LOG_OTP: ${AUTH_DEV_LOG_OTP:-true}
+      SEED_SUPER_ADMIN_EMAIL: ${SEED_SUPER_ADMIN_EMAIL:-admin@rentmate.local}
+      SEED_SUPER_ADMIN_PASSWORD: ${SEED_SUPER_ADMIN_PASSWORD:-ChangeMe12345}
+      SEED_DEMO_PASSWORD: ${SEED_DEMO_PASSWORD:-DemoUser12345}
       CHOKIDAR_USEPOLLING: 'true'
       TSC_WATCHFILE: UsePolling
       TSC_WATCHDIRECTORY: DynamicPriorityPolling
@@ -91,6 +95,10 @@ services:
       JWT_REFRESH_TTL: ${JWT_REFRESH_TTL:-7d}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3001}
       PAYMENT_GATEWAY: ${PAYMENT_GATEWAY:-razorpay}
+      AUTH_DEV_LOG_OTP: ${AUTH_DEV_LOG_OTP:-true}
+      SEED_SUPER_ADMIN_EMAIL: ${SEED_SUPER_ADMIN_EMAIL:-admin@rentmate.local}
+      SEED_SUPER_ADMIN_PASSWORD: ${SEED_SUPER_ADMIN_PASSWORD:-ChangeMe12345}
+      SEED_DEMO_PASSWORD: ${SEED_DEMO_PASSWORD:-DemoUser12345}
     volumes:
       - .:/usr/src/app
       - node_modules:/usr/src/app/node_modules

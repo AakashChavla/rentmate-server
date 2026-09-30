@@ -55,7 +55,9 @@ Production images use the `production` Docker target. The API command is `node d
 | `yarn worker:prod` | Compiled worker |
 | `yarn build` | Compile to `dist/` |
 | `yarn lint` | ESLint |
-| `yarn test` | Jest |
+| `yarn test` | Jest unit tests |
+| `yarn test:e2e` | API tests against Postgres and Redis |
+| `yarn seed` | Idempotent permissions, roles, platform admin, and development demo users |
 | `yarn migration:generate` | Generate a TypeORM migration from entity changes |
 | `yarn migration:run` | Apply migrations |
 | `yarn migration:revert` | Roll back the last migration |
@@ -109,6 +111,10 @@ Copy `.env.example` to `.env` or `.env.local`. `.env.local` overrides `.env`. Th
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | no | Used by the payments phase |
 | `S3_BUCKET`, `S3_REGION` | no | Used by the documents phase |
 | `SENDGRID_API_KEY` | no | Used by the notifications phase |
+| `AUTH_DEV_LOG_OTP` | no | Default `false`. Logs OTP codes for local development. Startup fails when this is `true` and `NODE_ENV=production` |
+| `SEED_SUPER_ADMIN_EMAIL` | for `yarn seed` | Platform admin email |
+| `SEED_SUPER_ADMIN_PASSWORD` | for `yarn seed` | At least 10 characters, with a letter and a number |
+| `SEED_DEMO_PASSWORD` | development seed | Shared password for demo users. Ignored unless `NODE_ENV=development` |
 
 Money columns added later use `NUMERIC(12,2)`. Timestamps use `timestamptz`. Primary keys are UUID v4 via `gen_random_uuid()` (`uuidExtension: pgcrypto`). The first migration enables the `pgcrypto` extension only.
 
@@ -116,7 +122,7 @@ Money columns added later use `NUMERIC(12,2)`. Timestamps use `timestamptz`. Pri
 
 `TenantBaseEntity` adds a non-null indexed `organization_id`. `TenantRepository` requires that id on every find, update, and delete, and always adds `organization_id = :organizationId`. A missing id throws.
 
-`TenantContext` stores the organization id in `AsyncLocalStorage`. The auth phase will set it from the verified JWT through `TenantContext.setVerifiedIdentity()`. Do not read the organization id from the request body, query string, or route params.
+`TenantContext` stores the organization id in `AsyncLocalStorage`. The JWT guard calls `TenantContext.setVerifiedIdentity()` from the verified access token. Do not read the organization id from the request body, query string, or route params. Login, OTP, and password reset look up a user by email in `AuthUserLookup` before the organization is known. That is the only user query allowed to omit `organization_id`.
 
 ## HTTP conventions
 
@@ -144,7 +150,54 @@ Send `X-Request-ID` or the API generates one. The same value is returned on the 
 
 Rate limit: 100 requests per minute per route and client, stored in Redis. Health probes are excluded.
 
-Auth cookies, when added, should use `buildCookieOptions()`: `httpOnly`, `SameSite=Strict` and `Secure` in production, and `COOKIE_DOMAIN` when it is set.
+Auth cookies use `buildCookieOptions()`: `httpOnly`, `SameSite=Lax` in development and `SameSite=Strict` plus `Secure` in production. Set `COOKIE_DOMAIN` to a shared parent domain in production (for example `.rentmate.example`) so the API and the Next.js app can exchange cookies. Omit it on localhost.
+
+## Authentication
+
+There is no public signup. `yarn seed` creates the platform organization (`slug: platform`) and a super admin from `SEED_SUPER_ADMIN_EMAIL` / `SEED_SUPER_ADMIN_PASSWORD`. In development it also creates the `demo` organization and one user for each non-admin role. Demo users share `SEED_DEMO_PASSWORD`. The owner is `demo@rentmate.local`. The others are `property-manager@`, `accountant@`, `receptionist@`, `maintenance@`, `security@`, and `tenant@rentmate.local`.
+
+Login `POST /api/v1/auth/login` with `{ "email", "password" }`. The response body matches `GET /api/v1/auth/me` and does not contain tokens. Three cookies are set:
+
+| Cookie | Path | Contents |
+| --- | --- | --- |
+| `rm_access` | `/` | Access JWT (`sub`, `org`, `fid`). TTL `JWT_ACCESS_TTL`. |
+| `rm_refresh` | `/api/v1/auth` | Refresh JWT (`sub`, `org`, `fid`, `jti`). Rotated on every `POST /api/v1/auth/refresh`. |
+| `rm_session` | `/` | The value `1`. A presence hint for the Next.js middleware. It grants nothing. |
+
+Reusing a revoked refresh token revokes that whole session family and returns `401 SESSION_REVOKED`. Logout revokes the current family and clears all three cookies. It still works when the access cookie has expired, as long as the refresh cookie is valid.
+
+Passwords use Argon2id. OTP codes are 6 digits, expire in 5 minutes, and are stored hashed. Real email delivery is later; the API enqueues `notification.email`, and the worker logs the message. Set `AUTH_DEV_LOG_OTP=true` to print the code from the API process during local development.
+
+### Endpoints
+
+| Method | Path | Auth |
+| --- | --- | --- |
+| POST | `/api/v1/auth/login` | Public, 10 requests/minute |
+| POST | `/api/v1/auth/refresh` | Refresh cookie |
+| POST | `/api/v1/auth/logout` | Access or refresh cookie |
+| POST | `/api/v1/auth/otp/send` | Public |
+| POST | `/api/v1/auth/otp/verify` | Public |
+| POST | `/api/v1/auth/password/forgot` | Public |
+| POST | `/api/v1/auth/password/reset` | Public |
+| POST | `/api/v1/auth/password/change` | Access cookie |
+| GET | `/api/v1/auth/me` | Access cookie |
+| GET | `/api/v1/users` | `user:read` |
+| GET | `/api/v1/users/:id` | `user:read` |
+| PATCH | `/api/v1/users/:id` | `user:update` |
+| POST | `/api/v1/users/:id/roles` | `role:assign` and `ORG_OWNER` |
+| DELETE | `/api/v1/users/:id/roles/:assignmentId` | `role:assign` and `ORG_OWNER` |
+| GET | `/api/v1/roles` | Access cookie |
+| GET | `/api/v1/permissions` | Access cookie |
+
+A user in another organization is returned as `404`, not `403`. Property-scoped role assignment returns `422 NOT_SUPPORTED_YET`.
+
+### Error codes
+
+`VALIDATION_ERROR`, `BAD_REQUEST`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`, `RATE_LIMITED`, `TENANT_SCOPE_MISSING`, `INTERNAL_ERROR`, `INVALID_CREDENTIALS`, `ACCOUNT_LOCKED`, `ACCOUNT_SUSPENDED`, `SESSION_REVOKED`, `TOKEN_EXPIRED`, `OTP_INVALID`, `OTP_EXPIRED`, `OTP_LOCKED`, `LAST_OWNER`, `NOT_SUPPORTED_YET`, `WEAK_PASSWORD`.
+
+### Seeded roles
+
+`SUPER_ADMIN` has only `platform:*` and no access to organization data. `ORG_OWNER` has every organization permission, including `role:assign`. `PROPERTY_MANAGER` operates properties, units, tenants, leases, complaints, and visitors. `ACCOUNTANT` has invoice, payment, expense, and report permissions and cannot manage tenants. `RECEPTIONIST` handles visitors and can read tenants. `MAINTENANCE_STAFF` has complaint permissions only. `SECURITY_STAFF` has visitor permissions only. `TENANT` can read their lease and invoices and create complaints and visitors.
 
 ## Working with the client repo
 

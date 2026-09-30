@@ -44,15 +44,12 @@ async function bootstrap(): Promise<void> {
       'HTTP API for RentMate. Versioned routes are served under /api/v1. Health probes are unversioned and are not wrapped in the response envelope.',
     )
     .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description: 'Access token. Authentication is added in a later phase.',
-      },
-      'access-token',
-    )
+    .addCookieAuth('rm_access', {
+      type: 'apiKey',
+      in: 'cookie',
+      name: 'rm_access',
+      description: 'Access token cookie. It is httpOnly and is not returned in JSON.',
+    })
     .build();
   const document = SwaggerModule.createDocument(app, swaggerConfig);
   SwaggerModule.setup('api/docs', app, document, {

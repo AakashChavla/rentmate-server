@@ -42,6 +42,10 @@ jobs:
       JWT_REFRESH_TTL: 7d
       CORS_ORIGIN: http://localhost:3001
       PAYMENT_GATEWAY: razorpay
+      AUTH_DEV_LOG_OTP: 'false'
+      SEED_SUPER_ADMIN_EMAIL: super@rentmate.local
+      SEED_SUPER_ADMIN_PASSWORD: SuperAdmin123
+      SEED_DEMO_PASSWORD: DemoUser12345
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -53,3 +57,5 @@ jobs:
       - run: yarn test
       - run: yarn build
       - run: yarn migration:run
+      - run: yarn seed
+      - run: yarn test:e2e

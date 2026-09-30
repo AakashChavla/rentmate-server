@@ -2,8 +2,8 @@ import { Column, Index } from 'typeorm';
 import { BaseEntity } from './base.entity';
 
 /**
- * Row owned by one organization. The organizations table and foreign key
- * arrive in a later phase; this column is the tenancy boundary until then.
+ * Row owned by one organization. Feature migrations add the foreign key.
+ * This column is the tenancy boundary for every tenant query.
  */
 export abstract class TenantBaseEntity extends BaseEntity {
   @Index()

@@ -6,6 +6,7 @@ ENV HUSKY=0
 RUN corepack enable && corepack prepare yarn@1.22.22 --activate
 
 FROM base AS deps
+RUN apk add --no-cache python3 make g++
 COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 

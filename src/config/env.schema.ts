@@ -42,6 +42,16 @@ export const envSchema = z
     S3_BUCKET: optionalText,
     S3_REGION: optionalText,
     SENDGRID_API_KEY: optionalText,
+    AUTH_DEV_LOG_OTP: z.preprocess(
+      (value) => (value === undefined || value === '' ? undefined : value),
+      z
+        .union([z.boolean(), z.enum(['true', 'false'])])
+        .transform((value) => value === true || value === 'true')
+        .default(false),
+    ),
+    SEED_SUPER_ADMIN_EMAIL: optionalText,
+    SEED_SUPER_ADMIN_PASSWORD: optionalText,
+    SEED_DEMO_PASSWORD: optionalText,
   })
   .superRefine((value, ctx) => {
     const hasDatabaseUrl = Boolean(value.DATABASE_URL);
@@ -81,6 +91,14 @@ export const envSchema = z
         message: 'JWT_REFRESH_SECRET must be different from JWT_ACCESS_SECRET',
       });
     }
+
+    if (value.NODE_ENV === 'production' && value.AUTH_DEV_LOG_OTP) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['AUTH_DEV_LOG_OTP'],
+        message: 'AUTH_DEV_LOG_OTP cannot be enabled when NODE_ENV is production',
+      });
+    }
   });
 
 export interface AppConfig {
@@ -101,6 +119,10 @@ export interface AppConfig {
   s3Bucket?: string;
   s3Region?: string;
   sendgridApiKey?: string;
+  authDevLogOtp: boolean;
+  seedSuperAdminEmail?: string;
+  seedSuperAdminPassword?: string;
+  seedDemoPassword?: string;
 }
 
 type ParsedEnv = z.infer<typeof envSchema>;
@@ -140,6 +162,7 @@ function toAppConfig(env: ParsedEnv): AppConfig {
       .map((origin) => origin.trim())
       .filter((origin) => origin.length > 0),
     paymentGateway: env.PAYMENT_GATEWAY,
+    authDevLogOtp: env.AUTH_DEV_LOG_OTP,
   };
 
   assignOptional(config, 'cookieDomain', env.COOKIE_DOMAIN);
@@ -149,6 +172,9 @@ function toAppConfig(env: ParsedEnv): AppConfig {
   assignOptional(config, 's3Bucket', env.S3_BUCKET);
   assignOptional(config, 's3Region', env.S3_REGION);
   assignOptional(config, 'sendgridApiKey', env.SENDGRID_API_KEY);
+  assignOptional(config, 'seedSuperAdminEmail', env.SEED_SUPER_ADMIN_EMAIL);
+  assignOptional(config, 'seedSuperAdminPassword', env.SEED_SUPER_ADMIN_PASSWORD);
+  assignOptional(config, 'seedDemoPassword', env.SEED_DEMO_PASSWORD);
 
   return config;
 }
