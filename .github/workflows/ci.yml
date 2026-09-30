@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: rentmate
+          POSTGRES_PASSWORD: rentmate
+          POSTGRES_DB: rentmate
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U rentmate -d rentmate"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      HUSKY: 0
+      NODE_ENV: test
+      PORT: 3000
+      DATABASE_URL: postgresql://rentmate:rentmate@localhost:5432/rentmate
+      REDIS_URL: redis://localhost:6379
+      JWT_ACCESS_SECRET: ci-access-secret-value
+      JWT_REFRESH_SECRET: ci-refresh-secret-value
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL: 7d
+      CORS_ORIGIN: http://localhost:3001
+      PAYMENT_GATEWAY: razorpay
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+      - run: yarn install --frozen-lockfile
+      - run: yarn lint
+      - run: yarn test
+      - run: yarn build
+      - run: yarn migration:run
