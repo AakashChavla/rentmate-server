@@ -9,14 +9,14 @@ import type {
   PermissionGrant,
 } from '../../common/decorators/current-user.decorator';
 import { REDIS_CLIENT } from '../../redis/redis.constants';
-import { Organization } from '../organizations/organization.entity';
-import { User, UserStatus } from '../users/user.entity';
+import { Organization } from '../organizations/entities/organization.entity';
+import { User, UserStatus } from '../users/entities/user.entity';
 import { canAccess, holdsPermission, type ResourceCheck } from './permission-check';
-import { Permission } from './permission.entity';
+import { Permission } from './entities/permission.entity';
 import { PLATFORM_PERMISSION } from './permission-catalog';
-import { Role } from './role.entity';
-import { RolePermission } from './role-permission.entity';
-import { UserRoleAssignment } from './user-role-assignment.entity';
+import { Role } from './entities/role.entity';
+import { RolePermission } from './entities/role-permission.entity';
+import { UserRoleAssignment } from './entities/user-role-assignment.entity';
 
 const CACHE_TTL_SECONDS = 15 * 60;
 

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { QueuesModule } from '../../queues/queues.module';
-import { NotificationService } from './notification.service';
+import { NotificationService } from './notifications.service';
 
 @Module({
   imports: [QueuesModule],

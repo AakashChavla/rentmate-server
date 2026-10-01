@@ -4,6 +4,10 @@ Backend for RentMate, a multi-tenant SaaS for hotels, PGs/hostels, apartments, a
 
 Phase 1 is the foundation: configuration, Postgres, Redis, queues, health checks, and the shared HTTP pipeline. Business modules are folders only.
 
+## AI rules
+
+All AI coding assistants (Claude Code, Cursor, Copilot, Antigravity/Gemini) must follow [AGENTS.md](AGENTS.md) as the single source of truth for layering, coding standards, and workflows. For system architecture and implementation phase roadmap, see [docs/architecture.md](docs/architecture.md).
+
 ## Prerequisites
 
 - Node.js 20 LTS (`>=20.19.0`)
@@ -75,19 +79,36 @@ src/
   config/                 Zod env validation and typed config
   common/
     base/                 BaseEntity, TenantBaseEntity, TenantRepository, TenantContext
-    decorators/           @CurrentUser and @Public placeholders
+    constants/            Error codes and shared enums
+    decorators/           @CurrentUser, @Public, @RequirePermissions
     filters/              Global exception filter
     interceptors/         Response envelope and request logging
+    interfaces/           API response interfaces
     middleware/           Request id
     pipes/                Validation pipe
-    utils/                Cursor pagination and cookie flags
+    swagger/              API envelope schemas
+    types/                Type declarations (express.d.ts)
+    utils/                Cursor pagination, cookie flags, masking
   database/               Data source, migrations, seeds
-  redis/                  ioredis client and throttler storage
-  queues/                 BullMQ queues and base processor
   health/                 Liveness and readiness
+  integrations/           Third-party ports & adapters (email provider, SMTP adapter, templates)
   logger/                 Pino
-  modules/                Feature modules (empty until later phases)
-test/                     Unit tests
+  modules/                Feature modules (auth, authorization, notifications, users, organizations)
+    <feature>/
+      <feature>.module.ts
+      <feature>.controller.ts
+      <feature>.service.ts
+      entities/           TypeORM entities
+      dto/                Action DTOs and response DTOs
+      processors/         BullMQ processors owned by this feature
+  queues/                 BullMQ queue constants, base processor, queues module
+  redis/                  ioredis client and throttler storage
+test/
+  unit/                   Unit tests mirroring src/ path
+  integration/            Repository and database integration tests
+  e2e/                    End-to-end HTTP tests
+  support/                Fakes, factories, and environment setup
+  contracts/              Adapter contract suites
 ```
 
 ## Environment

@@ -1,0 +1,8 @@
+---
+description: RentMate server rules (layering, tenancy, naming, tests)
+alwaysApply: true
+---
+Follow @AGENTS.md as the single source of truth and @docs/architecture.md for scope and flow.
+Never run git write commands unless the user asks. Plan first for multi-file changes.
+Controller → Service → Repository; TypeORM only in repositories; vendors only behind `src/integrations/<name>` ports.
+Org id only from TenantContext. Run `yarn lint && yarn test && yarn test:e2e && yarn build` before finishing.

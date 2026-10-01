@@ -7,10 +7,10 @@ import { AuthorizationModule } from '../authorization/authorization.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { OtpVerification } from './otp-verification.entity';
+import { OtpVerification } from './entities/otp-verification.entity';
 import { OtpService } from './otp.service';
 import { argonOptionsFor, PasswordService } from './password.service';
-import { RefreshToken } from './refresh-token.entity';
+import { RefreshToken } from './entities/refresh-token.entity';
 import { TokenService } from './token.service';
 
 @Module({

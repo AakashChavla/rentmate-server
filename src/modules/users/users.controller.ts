@@ -21,7 +21,7 @@ import {
   RoleAssignmentDto,
   UpdateUserDto,
   UserViewDto,
-} from './dto/user.dto';
+} from './dto';
 import { UsersService, type UserView } from './users.service';
 
 @ApiTags('users')

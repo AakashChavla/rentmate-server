@@ -10,7 +10,7 @@ import { AppException } from '../../common/exceptions/app.exception';
 import { CookieName } from '../../common/utils/auth-cookies';
 import { TokenService } from '../auth/token.service';
 import type { AccessTokenClaims } from '../auth/token.types';
-import { UserStatus } from '../users/user.entity';
+import { UserStatus } from '../users/entities/user.entity';
 import { PermissionService } from './permission.service';
 
 @Injectable()

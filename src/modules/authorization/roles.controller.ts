@@ -4,8 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import type { Repository } from 'typeorm';
 import { ApiDataResponse } from '../../common/swagger/api-envelope';
 import { PERMISSIONS, ROLE_DEFINITIONS, ROLE_PERMISSIONS } from './permission-catalog';
-import { Permission } from './permission.entity';
-import { Role } from './role.entity';
+import { Permission } from './entities/permission.entity';
+import { Role } from './entities/role.entity';
 
 class RoleListItemDto {
   key!: string;

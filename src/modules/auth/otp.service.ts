@@ -8,10 +8,10 @@ import { ErrorCode } from '../../common/constants/error-codes';
 import { AppException } from '../../common/exceptions/app.exception';
 import { AppConfigService } from '../../config/app-config.service';
 import { REDIS_CLIENT } from '../../redis/redis.constants';
-import { NotificationService } from '../notifications/notification.service';
+import { NotificationService } from '../notifications/notifications.service';
 import { AuthUserLookup } from '../users/auth-user-lookup.service';
-import { User } from '../users/user.entity';
-import { OtpPurpose, OtpVerification } from './otp-verification.entity';
+import { User } from '../users/entities/user.entity';
+import { OtpPurpose, OtpVerification } from './entities/otp-verification.entity';
 import { hashesEqual, sha256 } from './token-hash';
 
 const CODE_TTL_MS = 5 * 60 * 1000;

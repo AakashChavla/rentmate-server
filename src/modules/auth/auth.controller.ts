@@ -24,8 +24,8 @@ import {
   PasswordChangedDto,
   PasswordForgotDto,
   PasswordResetDto,
-} from './dto/auth.dto';
-import { OtpPurpose } from './otp-verification.entity';
+} from './dto';
+import { OtpPurpose } from './entities/otp-verification.entity';
 import type { ClientMeta, IssuedSession } from './token.types';
 
 @ApiTags('auth')

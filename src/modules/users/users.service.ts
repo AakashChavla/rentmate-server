@@ -8,11 +8,11 @@ import { AppException } from '../../common/exceptions/app.exception';
 import { PaginatedResult } from '../../common/interceptors/paginated-result';
 import { decodeCursor, encodeCursor, InvalidCursorError } from '../../common/utils/cursor';
 import { PermissionService } from '../authorization/permission.service';
-import { Role, RoleKey } from '../authorization/role.entity';
+import { Role, RoleKey } from '../authorization/entities/role.entity';
 import { ScopeType } from '../authorization/scope-type';
-import { UserRoleAssignment } from '../authorization/user-role-assignment.entity';
+import { UserRoleAssignment } from '../authorization/entities/user-role-assignment.entity';
 import { TokenService } from '../auth/token.service';
-import { User, UserStatus } from './user.entity';
+import { User, UserStatus } from './entities/user.entity';
 
 export interface UserView {
   id: string;

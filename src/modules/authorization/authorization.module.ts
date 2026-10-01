@@ -2,18 +2,18 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RefreshToken } from '../auth/refresh-token.entity';
+import { RefreshToken } from '../auth/entities/refresh-token.entity';
 import { TokenService } from '../auth/token.service';
-import { Organization } from '../organizations/organization.entity';
-import { User } from '../users/user.entity';
+import { Organization } from '../organizations/entities/organization.entity';
+import { User } from '../users/entities/user.entity';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { Permission } from './permission.entity';
+import { Permission } from './entities/permission.entity';
 import { PermissionService } from './permission.service';
 import { PermissionsGuard } from './permissions.guard';
-import { RolePermission } from './role-permission.entity';
-import { Role } from './role.entity';
+import { RolePermission } from './entities/role-permission.entity';
+import { Role } from './entities/role.entity';
 import { RolesController } from './roles.controller';
-import { UserRoleAssignment } from './user-role-assignment.entity';
+import { UserRoleAssignment } from './entities/user-role-assignment.entity';
 
 @Module({
   imports: [

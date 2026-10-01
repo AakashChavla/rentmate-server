@@ -8,18 +8,21 @@ import {
   ROLE_DEFINITIONS,
   ROLE_PERMISSIONS,
 } from '../../modules/authorization/permission-catalog';
-import { Permission } from '../../modules/authorization/permission.entity';
-import { RolePermission } from '../../modules/authorization/role-permission.entity';
-import { Role, RoleKey } from '../../modules/authorization/role.entity';
+import { Permission } from '../../modules/authorization/entities/permission.entity';
+import { RolePermission } from '../../modules/authorization/entities/role-permission.entity';
+import { Role, RoleKey } from '../../modules/authorization/entities/role.entity';
 import { ScopeType } from '../../modules/authorization/scope-type';
-import { UserRoleAssignment } from '../../modules/authorization/user-role-assignment.entity';
+import { UserRoleAssignment } from '../../modules/authorization/entities/user-role-assignment.entity';
 import {
   assertPasswordPolicy,
   argonOptionsFor,
   PasswordService,
 } from '../../modules/auth/password.service';
-import { Organization, OrganizationPlan } from '../../modules/organizations/organization.entity';
-import { User, UserStatus } from '../../modules/users/user.entity';
+import {
+  Organization,
+  OrganizationPlan,
+} from '../../modules/organizations/entities/organization.entity';
+import { User, UserStatus } from '../../modules/users/entities/user.entity';
 
 const DEMO_USERS: readonly { email: string; fullName: string; role: RoleKey }[] = [
   { email: 'demo@rentmate.local', fullName: 'Demo Owner', role: RoleKey.OrgOwner },

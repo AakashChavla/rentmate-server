@@ -11,7 +11,7 @@
       }
     ]
   },
-  "setupFiles": ["reflect-metadata", "<rootDir>/test/e2e/setup-env.ts"],
+  "setupFiles": ["reflect-metadata", "<rootDir>/test/support/setup-env.ts"],
   "maxWorkers": 1,
   "forceExit": true,
   "testTimeout": 120000

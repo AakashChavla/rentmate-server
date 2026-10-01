@@ -8,7 +8,7 @@ import { ErrorCode } from '../../common/constants/error-codes';
 import { AppException } from '../../common/exceptions/app.exception';
 import { durationToMs } from '../../common/utils/duration';
 import { AppConfigService } from '../../config/app-config.service';
-import { RefreshToken } from './refresh-token.entity';
+import { RefreshToken } from './entities/refresh-token.entity';
 import { hashesEqual, sha256 } from './token-hash';
 import type {
   AccessTokenClaims,

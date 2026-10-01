@@ -13,19 +13,19 @@ import { CookieName } from '../../src/common/utils/auth-cookies';
 import { seedDatabase } from '../../src/database/seeds/run-seed';
 import { validateEnv } from '../../src/config/env.schema';
 import { PasswordService } from '../../src/modules/auth/password.service';
-import { Role, RoleKey } from '../../src/modules/authorization/role.entity';
+import { Role, RoleKey } from '../../src/modules/authorization/entities/role.entity';
 import { ScopeType } from '../../src/modules/authorization/scope-type';
-import { UserRoleAssignment } from '../../src/modules/authorization/user-role-assignment.entity';
+import { UserRoleAssignment } from '../../src/modules/authorization/entities/user-role-assignment.entity';
 import {
   Organization,
   OrganizationPlan,
-} from '../../src/modules/organizations/organization.entity';
+} from '../../src/modules/organizations/entities/organization.entity';
 import { QueueName } from '../../src/queues/queue.constants';
-import type { EmailJob } from '../../src/queues/email-job';
-import { User, UserStatus } from '../../src/modules/users/user.entity';
+import type { EmailJob } from '../../src/integrations/email/email-job';
+import { User, UserStatus } from '../../src/modules/users/entities/user.entity';
 
 import { EmailProvider } from '../../src/integrations/email/email.provider';
-import { FakeEmailProvider } from '../fake-email.provider';
+import { FakeEmailProvider } from '../support/fake-email.provider';
 
 const PASSWORD = 'UserPass123';
 
