@@ -10,6 +10,7 @@ import { HealthModule } from './health/health.module';
 import { AppLoggerModule } from './logger/logger.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { AuthorizationModule } from './modules/authorization/authorization.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 import { OrganizationsModule } from './modules/organizations/organizations.module';
 import { UsersModule } from './modules/users/users.module';
 import { QueuesModule } from './queues/queues.module';
@@ -23,6 +24,7 @@ import { AppThrottlerModule } from './redis/throttler.module';
     RedisModule,
     DatabaseModule,
     QueuesModule,
+    NotificationsModule,
     AppThrottlerModule,
     OrganizationsModule,
     AuthorizationModule,

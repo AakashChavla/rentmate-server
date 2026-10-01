@@ -1,7 +1,5 @@
-import { InjectQueue } from '@nestjs/bullmq';
 import { HttpStatus, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import type { Queue } from 'bullmq';
 import { randomInt } from 'node:crypto';
 import type { Redis } from 'ioredis';
 import { IsNull, type Repository } from 'typeorm';
@@ -9,9 +7,8 @@ import { TenantRepository } from '../../common/base/tenant.repository';
 import { ErrorCode } from '../../common/constants/error-codes';
 import { AppException } from '../../common/exceptions/app.exception';
 import { AppConfigService } from '../../config/app-config.service';
-import { QueueName } from '../../queues/queue.constants';
-import type { EmailJob } from '../../queues/email-job';
 import { REDIS_CLIENT } from '../../redis/redis.constants';
+import { NotificationService } from '../notifications/notification.service';
 import { AuthUserLookup } from '../users/auth-user-lookup.service';
 import { User } from '../users/user.entity';
 import { OtpPurpose, OtpVerification } from './otp-verification.entity';
@@ -33,7 +30,7 @@ export class OtpService {
     @InjectRepository(OtpVerification) otps: Repository<OtpVerification>,
     private readonly users: AuthUserLookup,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
-    @InjectQueue(QueueName.NotificationEmail) private readonly emailQueue: Queue<EmailJob>,
+    private readonly notificationService: NotificationService,
     private readonly config: AppConfigService,
   ) {
     this.otps = new TenantRepository(otps);
@@ -76,11 +73,14 @@ export class OtpService {
       consumedAt: null,
     });
 
-    await this.emailQueue.add('otp', {
-      to: user.email,
-      purpose,
+    await this.notificationService.sendEmail({
       template: 'otp',
-      code,
+      to: user.email,
+      data: {
+        code,
+        purpose,
+        expiresInMinutes: 5,
+      },
     });
 
     if (this.config.authDevLogOtp) {

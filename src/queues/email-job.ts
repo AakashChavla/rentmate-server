@@ -1,6 +1,5 @@
-export interface EmailJob {
-  to: string;
-  purpose: string;
-  template: 'otp';
-  code?: string;
-}
+export type {
+  EmailJob,
+  EmailTemplateKey,
+  EmailTemplateDataMap,
+} from '../integrations/email/email-job';

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppConfigService } from '../../config/app-config.service';
-import { QueuesModule } from '../../queues/queues.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
 import { UsersModule } from '../users/users.module';
 import { AuthController } from './auth.controller';
@@ -16,7 +16,7 @@ import { TokenService } from './token.service';
 @Module({
   imports: [
     JwtModule.register({}),
-    QueuesModule,
+    NotificationsModule,
     TypeOrmModule.forFeature([RefreshToken, OtpVerification]),
     UsersModule,
     AuthorizationModule,

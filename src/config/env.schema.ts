@@ -41,7 +41,29 @@ export const envSchema = z
     RAZORPAY_WEBHOOK_SECRET: optionalText,
     S3_BUCKET: optionalText,
     S3_REGION: optionalText,
-    SENDGRID_API_KEY: optionalText,
+    EMAIL_PROVIDER: z.preprocess(
+      (value) => (value === undefined || value === '' ? undefined : value),
+      z.enum(['smtp']).default('smtp'),
+    ),
+    EMAIL_FROM: optionalText,
+    EMAIL_REPLY_TO: optionalText,
+    SMTP_HOST: z.preprocess(
+      (value) => (value === undefined || value === '' ? undefined : value),
+      z.string().min(1).default('smtp.gmail.com'),
+    ),
+    SMTP_PORT: z.preprocess(
+      (value) => (value === undefined || value === '' ? undefined : value),
+      z.coerce.number().int().positive().default(465),
+    ),
+    SMTP_SECURE: z.preprocess(
+      (value) => (value === undefined || value === '' ? undefined : value),
+      z
+        .union([z.boolean(), z.enum(['true', 'false'])])
+        .transform((value) => value === true || value === 'true')
+        .default(true),
+    ),
+    SMTP_USER: optionalText,
+    SMTP_PASSWORD: optionalText,
     AUTH_DEV_LOG_OTP: z.preprocess(
       (value) => (value === undefined || value === '' ? undefined : value),
       z
@@ -101,6 +123,19 @@ export const envSchema = z
     }
   });
 
+export interface AppConfigEmail {
+  provider: 'smtp';
+  from?: string;
+  replyTo?: string;
+  smtp: {
+    host: string;
+    port: number;
+    secure: boolean;
+    user?: string;
+    password?: string;
+  };
+}
+
 export interface AppConfig {
   nodeEnv: 'development' | 'test' | 'production';
   port: number;
@@ -118,7 +153,7 @@ export interface AppConfig {
   razorpayWebhookSecret?: string;
   s3Bucket?: string;
   s3Region?: string;
-  sendgridApiKey?: string;
+  email: AppConfigEmail;
   authDevLogOtp: boolean;
   seedSuperAdminEmail?: string;
   seedSuperAdminPassword?: string;
@@ -162,6 +197,18 @@ function toAppConfig(env: ParsedEnv): AppConfig {
       .map((origin) => origin.trim())
       .filter((origin) => origin.length > 0),
     paymentGateway: env.PAYMENT_GATEWAY,
+    email: {
+      provider: env.EMAIL_PROVIDER,
+      from: env.EMAIL_FROM,
+      replyTo: env.EMAIL_REPLY_TO,
+      smtp: {
+        host: env.SMTP_HOST,
+        port: env.SMTP_PORT,
+        secure: env.SMTP_SECURE,
+        user: env.SMTP_USER,
+        password: env.SMTP_PASSWORD,
+      },
+    },
     authDevLogOtp: env.AUTH_DEV_LOG_OTP,
   };
 
@@ -171,7 +218,6 @@ function toAppConfig(env: ParsedEnv): AppConfig {
   assignOptional(config, 'razorpayWebhookSecret', env.RAZORPAY_WEBHOOK_SECRET);
   assignOptional(config, 's3Bucket', env.S3_BUCKET);
   assignOptional(config, 's3Region', env.S3_REGION);
-  assignOptional(config, 'sendgridApiKey', env.SENDGRID_API_KEY);
   assignOptional(config, 'seedSuperAdminEmail', env.SEED_SUPER_ADMIN_EMAIL);
   assignOptional(config, 'seedSuperAdminPassword', env.SEED_SUPER_ADMIN_PASSWORD);
   assignOptional(config, 'seedDemoPassword', env.SEED_DEMO_PASSWORD);

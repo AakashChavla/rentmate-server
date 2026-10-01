@@ -18,13 +18,16 @@ describe('OtpService', () => {
     rows.length = 0;
     jobs.length = 0;
     redis = new MemoryRedis();
+    const notificationService = {
+      sendEmail: async (job: { to: string; data: { code: string } }) => {
+        jobs.push({ data: { to: job.to, code: job.data.code } });
+      },
+    };
     otp = new OtpService(
       memoryRepository(rows) as never,
       { findByEmail: async (email: string) => users.get(email) ?? null } as AuthUserLookup,
       redis as never,
-      {
-        add: async (_name: string, data: { to?: string; code?: string }) => jobs.push({ data }),
-      } as never,
+      notificationService as never,
       { authDevLogOtp: false } as AppConfigService,
     );
   });

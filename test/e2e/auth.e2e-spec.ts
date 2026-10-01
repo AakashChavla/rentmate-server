@@ -24,18 +24,26 @@ import { QueueName } from '../../src/queues/queue.constants';
 import type { EmailJob } from '../../src/queues/email-job';
 import { User, UserStatus } from '../../src/modules/users/user.entity';
 
+import { EmailProvider } from '../../src/integrations/email/email.provider';
+import { FakeEmailProvider } from '../fake-email.provider';
+
 const PASSWORD = 'UserPass123';
 
 describe('Auth and RBAC (e2e)', () => {
   let app: INestApplication;
   let dataSource: DataSource;
+  let fakeEmailProvider: FakeEmailProvider;
   let ownerA: { email: string; id: string };
   let maintenanceA: { email: string };
   let resetUser: { email: string };
   let userB: { id: string };
 
   beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
+    fakeEmailProvider = new FakeEmailProvider();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(EmailProvider)
+      .useValue(fakeEmailProvider)
+      .compile();
     app = moduleRef.createNestApplication();
     app.use(cookieParser());
     app.setGlobalPrefix('api', {
@@ -243,12 +251,17 @@ describe('Auth and RBAC (e2e)', () => {
     const queued = await queue.getJobs(['waiting', 'delayed', 'completed', 'active']);
     const match = queued
       .reverse()
-      .find((job) => job.data.to === email && job.data.purpose === purpose);
-    if (!match?.data.code) {
+      .find(
+        (job) =>
+          job.data.to === email &&
+          ((job.data as any).data?.purpose === purpose || (job.data as any).purpose === purpose),
+      );
+    const code = (match?.data as any)?.data?.code ?? (match?.data as any)?.code;
+    if (!code) {
       throw new Error(`OTP job for ${email} was not queued`);
     }
 
-    return match.data.code;
+    return code;
   }
 });
 

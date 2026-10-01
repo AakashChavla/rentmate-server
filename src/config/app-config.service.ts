@@ -70,8 +70,8 @@ export class AppConfigService {
     return this.config.get<string>('s3Region');
   }
 
-  get sendgridApiKey(): string | undefined {
-    return this.config.get<string>('sendgridApiKey');
+  get email(): AppConfig['email'] {
+    return this.config.getOrThrow<AppConfig['email']>('email');
   }
 
   get isProduction(): boolean {

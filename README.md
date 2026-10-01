@@ -110,11 +110,36 @@ Copy `.env.example` to `.env` or `.env.local`. `.env.local` overrides `.env`. Th
 | `PAYMENT_GATEWAY` | no | Default `razorpay` |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | no | Used by the payments phase |
 | `S3_BUCKET`, `S3_REGION` | no | Used by the documents phase |
-| `SENDGRID_API_KEY` | no | Used by the notifications phase |
+| `EMAIL_PROVIDER` | no | Default `smtp` |
+| `EMAIL_FROM` | worker only | Sender address (e.g. `"RentMate <your-gmail@gmail.com>"`) |
+| `EMAIL_REPLY_TO` | no | Optional reply-to address |
+| `SMTP_HOST` | no | Default `smtp.gmail.com` |
+| `SMTP_PORT` | no | Default `465` |
+| `SMTP_SECURE` | no | Default `true` (`false` for port 587 STARTTLS) |
+| `SMTP_USER` | worker only | Full Gmail / SMTP username |
+| `SMTP_PASSWORD` | worker only | 16-character Google App Password (without spaces) |
 | `AUTH_DEV_LOG_OTP` | no | Default `false`. Logs OTP codes for local development. Startup fails when this is `true` and `NODE_ENV=production` |
 | `SEED_SUPER_ADMIN_EMAIL` | for `yarn seed` | Platform admin email |
 | `SEED_SUPER_ADMIN_PASSWORD` | for `yarn seed` | At least 10 characters, with a letter and a number |
 | `SEED_DEMO_PASSWORD` | development seed | Shared password for demo users. Ignored unless `NODE_ENV=development` |
+
+### Email & Gmail SMTP Configuration
+
+Email delivery uses a Ports & Adapters abstraction (`EmailProvider` interface). Currently, the default and only active adapter is `smtp`.
+
+**Setting up Gmail SMTP:**
+1. Turn on **2-Step Verification** on your Google Account.
+2. Go to Google Account Security settings and generate an **App Password**.
+3. Use your full Gmail address as `SMTP_USER` and the 16-character App Password (without spaces) as `SMTP_PASSWORD`.
+4. Set `EMAIL_FROM` to match your authenticated Gmail account (e.g. `"RentMate <your-gmail@gmail.com>"`), because Gmail rewrites the `From` header unless an alias ("Send mail as") is configured in Gmail settings.
+
+*Note on Gmail limits & production:*
+- Google App Passwords may not be available for certain account types (e.g., accounts with Advanced Protection or Google Workspace accounts where the administrator disabled App Passwords).
+- Gmail has daily sending limits (roughly 500 emails/day for personal accounts, higher for Workspace accounts) and is intended for early development and low volume testing. Production environments should later transition to a dedicated transactional email relay (such as SendGrid, AWS SES, or Postmark) configured with proper SPF, DKIM, and DMARC DNS records on the sending domain.
+
+**Running locally with or without the worker:**
+- **Without worker (API only)**: Run only `api`, `postgres`, and `redis` with `AUTH_DEV_LOG_OTP=true`. The API process boots without requiring SMTP credentials, enqueues email jobs, and logs OTP codes directly in the API output console for easy developer login.
+- **With worker (Real email delivery)**: Provide valid `SMTP_USER`, `SMTP_PASSWORD`, and `EMAIL_FROM` in `.env` and launch `yarn worker` (or `docker compose up`). The worker process fails fast on startup if required SMTP credentials are missing when `EMAIL_PROVIDER=smtp`.
 
 Money columns added later use `NUMERIC(12,2)`. Timestamps use `timestamptz`. Primary keys are UUID v4 via `gen_random_uuid()` (`uuidExtension: pgcrypto`). The first migration enables the `pgcrypto` extension only.
 
