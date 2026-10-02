@@ -1,0 +1,15 @@
+---
+description: RentMate Core Engineering Rules
+globs: ""
+alwaysApply: true
+---
+
+# Core Architecture & Engineering Rules
+
+- Follow the modular monolith layer structure (L0 -> L1 -> L2 -> L3 -> L4 -> L5 -> L6 -> L7).
+- Platform layer (`core/`, `shared/`, `integrations/`) MUST NOT import from `modules/`.
+- Import cross-module logic ONLY via `modules/<module>/index.ts` public contracts.
+- Strictly enforce multi-tenancy: `organization_id` comes ONLY from verified JWT via `TenantContext`.
+- No `any` type, no default exports, no floating promises, no barrel re-export-all.
+- NEVER run `git commit` or `git add` unless explicitly asked in the current message.
+- Full details: [01-architecture.md](docs/ai/01-architecture.md) and [02-code-style-and-naming.md](docs/ai/02-code-style-and-naming.md)
