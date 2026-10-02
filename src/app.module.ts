@@ -1,26 +1,28 @@
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
-import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-import { ResponseEnvelopeInterceptor } from './common/interceptors/response-envelope.interceptor';
-import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
-import { AppConfigModule } from './config/config.module';
-import { DatabaseModule } from './database/database.module';
-import { HealthModule } from './health/health.module';
-import { AppLoggerModule } from './logger/logger.module';
-import { AuthModule } from './modules/auth/auth.module';
-import { AuthorizationModule } from './modules/authorization/authorization.module';
-import { NotificationsModule } from './modules/notifications/notifications.module';
-import { OrganizationsModule } from './modules/organizations/organizations.module';
-import { UsersModule } from './modules/users/users.module';
-import { QueuesModule } from './queues/queues.module';
-import { RedisModule } from './redis/redis.module';
-import { AppThrottlerModule } from './redis/throttler.module';
+import { AllExceptionsFilter } from './core/http/filters/all-exceptions.filter';
+import { LoggingInterceptor } from './core/http/interceptors/logging.interceptor';
+import { ResponseEnvelopeInterceptor } from './core/http/interceptors/response-envelope.interceptor';
+import { RequestIdMiddleware } from './core/http/middleware/request-id.middleware';
+import { AppConfigModule } from './core/config/config.module';
+import { DatabaseModule } from './core/database/database.module';
+import { HealthModule } from './core/health/health.module';
+import { AppLoggerModule } from './core/logger/logger.module';
+import { EventsModule } from './core/events/events.module';
+import { NotificationsModule } from './core/notifications/notifications.module';
+import { QueuesModule } from './core/queue/queues.module';
+import { RedisModule } from './core/redis/redis.module';
+import { AppThrottlerModule } from './core/redis/throttler.module';
+import { AuthModule } from './modules/auth';
+import { AuthorizationModule } from './modules/authorization';
+import { OrganizationsModule } from './modules/organizations';
+import { UsersModule } from './modules/users';
 
 @Module({
   imports: [
     AppConfigModule,
     AppLoggerModule.forRoot(),
+    EventsModule,
     RedisModule,
     DatabaseModule,
     QueuesModule,

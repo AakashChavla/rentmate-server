@@ -7,25 +7,25 @@ import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import { DataSource } from 'typeorm';
 import { AppModule } from '../../src/app.module';
-import { ErrorCode } from '../../src/common/constants/error-codes';
-import { createValidationPipe } from '../../src/common/pipes/validation.pipe';
-import { CookieName } from '../../src/common/utils/auth-cookies';
-import { seedDatabase } from '../../src/database/seeds/run-seed';
-import { validateEnv } from '../../src/config/env.schema';
-import { PasswordService } from '../../src/modules/auth/password.service';
-import { Role, RoleKey } from '../../src/modules/authorization/role.entity';
-import { ScopeType } from '../../src/modules/authorization/scope-type';
-import { UserRoleAssignment } from '../../src/modules/authorization/user-role-assignment.entity';
+import { ErrorCode } from '../../src/core/errors/error-codes';
+import { createValidationPipe } from '../../src/core/http/pipes/validation.pipe';
+import { CookieName } from '../../src/shared/auth-cookies';
+import { seedDatabase } from '../../src/core/database/seeds/run-seed';
+import { validateEnv } from '../../src/core/config/env.schema';
+import { PasswordService } from '../../src/modules/auth/services/password.service';
+import { Role, RoleKey } from '../../src/modules/authorization/entities/role.entity';
+import { ScopeType } from '../../src/modules/authorization/types/scope-type';
+import { UserRoleAssignment } from '../../src/modules/authorization/entities/user-role-assignment.entity';
 import {
   Organization,
   OrganizationPlan,
-} from '../../src/modules/organizations/organization.entity';
-import { QueueName } from '../../src/queues/queue.constants';
-import type { EmailJob } from '../../src/queues/email-job';
-import { User, UserStatus } from '../../src/modules/users/user.entity';
+} from '../../src/modules/organizations/entities/organization.entity';
+import { QueueName } from '../../src/core/queue/queue.constants';
+import type { EmailJob } from '../../src/core/notifications/email-job.types';
+import { User, UserStatus } from '../../src/modules/users/entities/user.entity';
 
 import { EmailProvider } from '../../src/integrations/email/email.provider';
-import { FakeEmailProvider } from '../fake-email.provider';
+import { FakeEmailProvider } from '../../src/integrations/email/tests/fake-email.provider';
 
 const PASSWORD = 'UserPass123';
 

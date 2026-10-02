@@ -1,24 +1,32 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { UserRepository } from './repositories/user.repository';
+import { UsersService } from './services/users.service';
+import { UsersController } from './controllers/users.controller';
+import { UserDirectory } from './contracts/user-directory.contract';
+import { UserRoleAssignmentRepository } from '../authorization/repositories/user-role-assignment.repository';
+import { RoleRepository } from '../authorization/repositories/role.repository';
+import { AuthModule } from '../auth/auth.module';
 import { AuthorizationModule } from '../authorization/authorization.module';
-import { TokenService } from '../auth/token.service';
-import { RefreshToken } from '../auth/refresh-token.entity';
-import { JwtModule } from '@nestjs/jwt';
-import { Role } from '../authorization/role.entity';
-import { UserRoleAssignment } from '../authorization/user-role-assignment.entity';
-import { AuthUserLookup } from './auth-user-lookup.service';
-import { User } from './user.entity';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
 
 @Module({
   imports: [
-    JwtModule.register({}),
-    TypeOrmModule.forFeature([User, UserRoleAssignment, Role, RefreshToken]),
-    AuthorizationModule,
+    TypeOrmModule.forFeature([User]),
+    forwardRef(() => AuthModule),
+    forwardRef(() => AuthorizationModule),
   ],
   controllers: [UsersController],
-  providers: [UsersService, AuthUserLookup, TokenService],
-  exports: [UsersService, AuthUserLookup, TypeOrmModule],
+  providers: [
+    UserRepository,
+    UserRoleAssignmentRepository,
+    RoleRepository,
+    UsersService,
+    {
+      provide: UserDirectory,
+      useExisting: UsersService,
+    },
+  ],
+  exports: [UsersService, UserDirectory, UserRepository],
 })
 export class UsersModule {}

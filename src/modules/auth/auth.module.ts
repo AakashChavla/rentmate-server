@@ -1,38 +1,42 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppConfigService } from '../../config/app-config.service';
-import { NotificationsModule } from '../notifications/notifications.module';
+import { AuthController } from './controllers/auth.controller';
+import { AuthService } from './services/auth.service';
+import { OtpService } from './services/otp.service';
+import { PasswordService } from './services/password.service';
+import { TokenService } from './services/token.service';
+import { SessionRevoker } from './contracts/session-revoker.contract';
+import { RefreshTokenRepository } from './repositories/refresh-token.repository';
+import { OtpVerificationRepository } from './repositories/otp-verification.repository';
+import { UserRepository } from '../users/repositories/user.repository';
+import { OtpVerification } from './entities/otp-verification.entity';
+import { RefreshToken } from './entities/refresh-token.entity';
+import { User } from '../users/entities/user.entity';
 import { AuthorizationModule } from '../authorization/authorization.module';
-import { UsersModule } from '../users/users.module';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { OtpVerification } from './otp-verification.entity';
-import { OtpService } from './otp.service';
-import { argonOptionsFor, PasswordService } from './password.service';
-import { RefreshToken } from './refresh-token.entity';
-import { TokenService } from './token.service';
+import { NotificationsModule } from '../../core/notifications/notifications.module';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([RefreshToken, OtpVerification, User]),
     JwtModule.register({}),
+    forwardRef(() => AuthorizationModule),
     NotificationsModule,
-    TypeOrmModule.forFeature([RefreshToken, OtpVerification]),
-    UsersModule,
-    AuthorizationModule,
   ],
   controllers: [AuthController],
   providers: [
-    AuthService,
+    RefreshTokenRepository,
+    OtpVerificationRepository,
+    UserRepository,
+    PasswordService,
     TokenService,
-    OtpService,
     {
-      provide: PasswordService,
-      inject: [AppConfigService],
-      useFactory: (config: AppConfigService) =>
-        new PasswordService(argonOptionsFor(config.nodeEnv)),
+      provide: SessionRevoker,
+      useExisting: TokenService,
     },
+    OtpService,
+    AuthService,
   ],
-  exports: [AuthService, TokenService, PasswordService],
+  exports: [SessionRevoker, TokenService, AuthService],
 })
 export class AuthModule {}

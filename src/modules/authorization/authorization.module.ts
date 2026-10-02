@@ -1,42 +1,54 @@
-import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
-import { JwtModule } from '@nestjs/jwt';
+import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RefreshToken } from '../auth/refresh-token.entity';
-import { TokenService } from '../auth/token.service';
-import { Organization } from '../organizations/organization.entity';
-import { User } from '../users/user.entity';
-import { JwtAuthGuard } from './jwt-auth.guard';
-import { Permission } from './permission.entity';
-import { PermissionService } from './permission.service';
-import { PermissionsGuard } from './permissions.guard';
-import { RolePermission } from './role-permission.entity';
-import { Role } from './role.entity';
-import { RolesController } from './roles.controller';
-import { UserRoleAssignment } from './user-role-assignment.entity';
+import { Permission } from './entities/permission.entity';
+import { Role } from './entities/role.entity';
+import { RolePermission } from './entities/role-permission.entity';
+import { UserRoleAssignment } from './entities/user-role-assignment.entity';
+import { RolesController } from './controllers/roles.controller';
+import { PermissionService } from './services/permission.service';
+import { PermissionChecker } from './contracts/permission-checker.contract';
+import { PermissionContextStore } from './stores/permission-context.store';
+import { UserRoleAssignmentRepository } from './repositories/user-role-assignment.repository';
+import { RoleRepository } from './repositories/role.repository';
+import { PermissionRepository } from './repositories/permission.repository';
+import { RolePermissionRepository } from './repositories/role-permission.repository';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { PermissionsGuard } from './guards/permissions.guard';
+import { UserRepository } from '../users/repositories/user.repository';
+import { OrganizationRepository } from '../organizations/repositories/organization.repository';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
-    JwtModule.register({}),
-    TypeOrmModule.forFeature([
-      Role,
-      Permission,
-      RolePermission,
-      UserRoleAssignment,
-      User,
-      Organization,
-      RefreshToken,
-    ]),
+    TypeOrmModule.forFeature([Role, Permission, RolePermission, UserRoleAssignment]),
+    forwardRef(() => AuthModule),
   ],
   controllers: [RolesController],
   providers: [
+    UserRepository,
+    OrganizationRepository,
+    UserRoleAssignmentRepository,
+    RoleRepository,
+    PermissionRepository,
+    RolePermissionRepository,
+    PermissionContextStore,
     PermissionService,
-    TokenService,
+    {
+      provide: PermissionChecker,
+      useExisting: PermissionService,
+    },
     JwtAuthGuard,
     PermissionsGuard,
-    { provide: APP_GUARD, useExisting: JwtAuthGuard },
-    { provide: APP_GUARD, useExisting: PermissionsGuard },
   ],
-  exports: [PermissionService, TypeOrmModule],
+  exports: [
+    PermissionChecker,
+    PermissionService,
+    JwtAuthGuard,
+    PermissionsGuard,
+    UserRoleAssignmentRepository,
+    RoleRepository,
+    PermissionRepository,
+    RolePermissionRepository,
+  ],
 })
 export class AuthorizationModule {}

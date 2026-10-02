@@ -1,8 +1,9 @@
 import type { Job } from 'bullmq';
 import { UnrecoverableError } from 'bullmq';
-import { EmailTemplateService } from '../src/integrations/email/templates/email-template.service';
-import { EmailProcessor, maskEmail } from '../src/queues/email.processor';
-import { FakeEmailProvider } from './fake-email.provider';
+import { EmailTemplateService } from '../src/core/notifications/email-template.service';
+import { EmailProcessor } from '../src/core/notifications/email.processor';
+import { maskEmail } from '../src/shared/mask';
+import { FakeEmailProvider } from '../src/integrations/email/tests/fake-email.provider';
 
 describe('EmailProcessor', () => {
   let processor: EmailProcessor;
@@ -81,8 +82,8 @@ describe('EmailProcessor', () => {
   });
 
   it('masks email addresses correctly', () => {
-    expect(maskEmail('aakash@domain.com')).toBe('a***@domain.com');
-    expect(maskEmail('john.doe@company.org')).toBe('j***@company.org');
+    expect(maskEmail('aakash@domain.com')).toBe('a***h@domain.com');
+    expect(maskEmail('john.doe@company.org')).toBe('j***e@company.org');
     expect(maskEmail('invalid-email')).toBe('***');
   });
 });

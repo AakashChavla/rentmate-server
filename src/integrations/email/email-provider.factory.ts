@@ -1,4 +1,4 @@
-import { AppConfigService } from '../../config/app-config.service';
+import { AppConfigService } from '../../core/config/app-config.service';
 import { SmtpEmailProvider } from './adapters/smtp-email.provider';
 import { EmailProvider } from './email.provider';
 

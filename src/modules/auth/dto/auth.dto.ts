@@ -1,9 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { Equals, IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
-import { IsStrongPassword } from '../../../common/decorators/password-policy.decorator';
-import { OtpPurpose } from '../otp-verification.entity';
-import { UserStatus } from '../../users/user.entity';
+import { IsStrongPassword } from '../../../core/http/decorators/password-policy.decorator';
+import { OtpPurpose } from '../entities/otp-verification.entity';
+import { UserStatus } from '../../users/entities/user.entity';
 
 function normalizeEmail(value: unknown): unknown {
   return typeof value === 'string' ? value.trim().toLowerCase() : value;

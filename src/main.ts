@@ -7,8 +7,8 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 import { AppModule } from './app.module';
-import { createValidationPipe } from './common/pipes/validation.pipe';
-import { AppConfigService } from './config/app-config.service';
+import { createValidationPipe } from './core/http/pipes/validation.pipe';
+import { AppConfigService } from './core/config/app-config.service';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });

@@ -1,7 +1,4 @@
-import {
-  BRAND_NAME,
-  EmailTemplateService,
-} from '../src/integrations/email/templates/email-template.service';
+import { BRAND_NAME, EmailTemplateService } from '../src/core/notifications/email-template.service';
 
 describe('EmailTemplateService', () => {
   let service: EmailTemplateService;
@@ -51,7 +48,7 @@ describe('EmailTemplateService', () => {
       to: 'user@example.com',
       data: {
         code: '<script>alert("xss")</script>',
-        purpose: 'CUSTOM_<TAG>',
+        purpose: 'CUSTOM_<TAG>' as any,
         expiresInMinutes: 5,
       },
     });

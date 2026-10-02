@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
-import { AppConfigModule } from './config/config.module';
-import { DatabaseModule } from './database/database.module';
-import { EmailModule } from './integrations/email/email.module';
-import { AppLoggerModule } from './logger/logger.module';
-import { NotificationsModule } from './modules/notifications/notifications.module';
-import { EmailWorkerModule } from './queues/email-worker.module';
-import { QueuesModule } from './queues/queues.module';
-import { RedisModule } from './redis/redis.module';
+import { AppConfigModule } from './core/config/config.module';
+import { DatabaseModule } from './core/database/database.module';
+import { AppLoggerModule } from './core/logger/logger.module';
+import { NotificationsWorkerModule } from './core/notifications/notifications-worker.module';
+import { QueuesModule } from './core/queue/queues.module';
+import { RedisModule } from './core/redis/redis.module';
 
 @Module({
   imports: [
@@ -15,9 +13,7 @@ import { RedisModule } from './redis/redis.module';
     RedisModule,
     DatabaseModule,
     QueuesModule,
-    EmailModule,
-    NotificationsModule,
-    EmailWorkerModule,
+    NotificationsWorkerModule,
   ],
 })
 export class WorkerModule {}

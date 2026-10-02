@@ -1,7 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
-import { AppConfigService } from '../../../config/app-config.service';
+import { AppConfigService } from '../../../core/config/app-config.service';
 import { EmailDeliveryError } from '../email-delivery.error';
 import { EmailMessage, EmailProvider, EmailSendResult } from '../email.provider';
 

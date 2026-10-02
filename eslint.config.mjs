@@ -45,4 +45,24 @@ export default tseslint.config(
       '@typescript-eslint/no-unnecessary-type-assertion': 'off',
     },
   },
+  {
+    files: ['src/**/*.service.ts', 'src/**/*.controller.ts', 'src/**/*.guard.ts', 'src/**/*.processor.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'typeorm',
+              message: 'Direct TypeORM imports are forbidden in services, controllers, guards, and processors. Use Repositories instead.',
+            },
+            {
+              name: '@nestjs/typeorm',
+              message: 'Direct NestJS TypeORM imports are forbidden in services, controllers, guards, and processors. Use Repositories instead.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 );
