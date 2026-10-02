@@ -28,21 +28,31 @@ export default tseslint.config(
   },
   {
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-call': 'error',
+      '@typescript-eslint/no-unsafe-argument': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
+      '@typescript-eslint/require-await': 'off',
+      '@typescript-eslint/no-misused-promises': 'off',
+      '@typescript-eslint/unbound-method': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+    },
+  },
+  {
+    files: ['test/**/*.ts', '**/*.spec.ts', '**/*.int-spec.ts', '**/*.e2e-spec.ts'],
+    rules: {
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-member-access': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       '@typescript-eslint/no-unsafe-return': 'off',
-      '@typescript-eslint/require-await': 'off',
-      '@typescript-eslint/no-misused-promises': 'off',
-      '@typescript-eslint/unbound-method': 'off',
-      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
     },
   },
   {

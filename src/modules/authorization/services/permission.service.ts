@@ -12,7 +12,7 @@ import { UserRepository } from '../../users/repositories/user.repository';
 import { OrganizationRepository } from '../../organizations/repositories/organization.repository';
 import { UserRoleAssignmentRepository } from '../repositories/user-role-assignment.repository';
 import { RolePermissionRepository } from '../repositories/role-permission.repository';
-import { UserStatus } from '../../users/entities/user.entity';
+import { UserStatus } from '../../users/types/user-status';
 
 export interface AuthProfile {
   user: {
@@ -53,12 +53,12 @@ export class PermissionService implements PermissionChecker {
     return canAccess(user, permission, options);
   }
 
-  // PermissionChecker contract methods
-  async getUserGrants(userId: string): Promise<UserGrant[]> {
-    const cached = await this.store.get(userId);
+  async getUserGrants(userId: string, organizationId?: string): Promise<UserGrant[]> {
+    const orgId = organizationId || this.userRepository['getOrgId']();
+    const cached = await this.store.get(`${orgId}:${userId}`);
     if (cached) return cached;
 
-    const assignmentRows = await this.assignmentRepository.findGrantsByUserId(userId);
+    const assignmentRows = await this.assignmentRepository.findGrantsByUserId(orgId, userId);
     const roleIds = [...new Set(assignmentRows.map((r) => r.roleId))];
     const rpRows = await this.rolePermissionRepository.findPermissionsForRoleIds(roleIds);
 
@@ -101,7 +101,10 @@ export class PermissionService implements PermissionChecker {
       return null;
     }
 
-    const assignmentRows = await this.assignmentRepository.findGrantsByUserId(userId);
+    const assignmentRows = await this.assignmentRepository.findGrantsByUserId(
+      organizationId,
+      userId,
+    );
     const roleIds = [...new Set(assignmentRows.map((r) => r.roleId))];
     const rpRows = await this.rolePermissionRepository.findPermissionsForRoleIds(roleIds);
 

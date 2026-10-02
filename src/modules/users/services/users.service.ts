@@ -10,7 +10,9 @@ import { RoleRepository } from '../../authorization/repositories/role.repository
 import { PermissionChecker } from '../../authorization/contracts/permission-checker.contract';
 import { SessionRevoker } from '../../auth/contracts/session-revoker.contract';
 import { ScopeType } from '../../authorization/types/scope-type';
-import { User, UserStatus } from '../entities/user.entity';
+import { UserStatus } from '../types/user-status';
+import type { UserListQuery } from '../types/user-list-query';
+import { User } from '../entities/user.entity';
 import { UserDirectory, UserRecord } from '../contracts/user-directory.contract';
 
 export interface UserView {
@@ -21,13 +23,6 @@ export interface UserView {
   status: UserStatus;
   lastLoginAt: Date | null;
   roles: { key: string; scopeType: ScopeType; scopeId: string }[];
-}
-
-export interface UserListQuery {
-  status?: UserStatus;
-  search?: string;
-  cursor?: string;
-  limit?: number;
 }
 
 @Injectable()

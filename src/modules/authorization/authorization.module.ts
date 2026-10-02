@@ -1,3 +1,4 @@
+import { APP_GUARD } from '@nestjs/core';
 import { forwardRef, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Permission } from './entities/permission.entity';
@@ -39,6 +40,14 @@ import { AuthModule } from '../auth/auth.module';
     },
     JwtAuthGuard,
     PermissionsGuard,
+    {
+      provide: APP_GUARD,
+      useExisting: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useExisting: PermissionsGuard,
+    },
   ],
   exports: [
     PermissionChecker,

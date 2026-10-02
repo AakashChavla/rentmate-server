@@ -10,7 +10,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { ScopeType } from '../../authorization/types/scope-type';
-import { UserStatus } from '../entities/user.entity';
+import { UserStatus } from '../types/user-status';
 
 export class ListUsersQueryDto {
   @ApiPropertyOptional({ enum: UserStatus })

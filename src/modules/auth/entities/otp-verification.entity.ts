@@ -1,11 +1,7 @@
 import { Column, Entity, Index } from 'typeorm';
 import { TenantBaseEntity } from '../../../core/database/base/tenant-base.entity';
 
-export enum OtpPurpose {
-  Login = 'LOGIN',
-  PasswordReset = 'PASSWORD_RESET',
-  EmailVerification = 'EMAIL_VERIFICATION',
-}
+import { OtpPurpose } from '../types/otp-purpose';
 
 @Entity('otp_verifications')
 @Index('otp_verifications_organization_id_user_id_purpose_idx', [

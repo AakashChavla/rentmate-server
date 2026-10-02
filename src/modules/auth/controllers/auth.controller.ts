@@ -11,6 +11,7 @@ import {
   buildAuthCookies,
   buildClearedAuthCookies,
   CookieName,
+  readCookie,
 } from '../../../shared/auth-cookies';
 import { AppConfigService } from '../../../core/config/app-config.service';
 import { AuthService, type MeResponse } from '../services/auth.service';
@@ -25,7 +26,7 @@ import {
   PasswordForgotDto,
   PasswordResetDto,
 } from '../dto/auth.dto';
-import { OtpPurpose } from '../entities/otp-verification.entity';
+import { OtpPurpose } from '../types/otp-purpose';
 import type { ClientMeta, IssuedSession } from '../types/token.types';
 
 @ApiTags('auth')
@@ -176,9 +177,4 @@ function clientMeta(request: Request): ClientMeta {
     userAgent: userAgent ? userAgent.slice(0, 512) : null,
     ip: request.ip ?? null,
   };
-}
-
-function readCookie(request: Request, name: string): string | undefined {
-  const value = request.cookies?.[name] as unknown;
-  return typeof value === 'string' && value.length > 0 ? value : undefined;
 }

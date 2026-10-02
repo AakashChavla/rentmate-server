@@ -1,4 +1,4 @@
-import type { UserStatus } from '../entities/user.entity';
+import type { UserStatus } from '../types/user-status';
 
 export interface UserRecord {
   id: string;

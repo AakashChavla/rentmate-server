@@ -1,28 +1,29 @@
 import 'reflect-metadata';
 import type { DataSource, Repository } from 'typeorm';
-import type { AppConfig } from '../../config/env.schema';
-import { validateEnv } from '../../config/env.schema';
-import { AppDataSource } from '../data-source';
+import type { AppConfig } from '../../src/core/config/env.schema';
+import { validateEnv } from '../../src/core/config/env.schema';
+import { AppDataSource } from '../../src/core/database/data-source';
 import {
   PERMISSIONS,
   ROLE_DEFINITIONS,
   ROLE_PERMISSIONS,
-} from '../../../modules/authorization/constants/permission-catalog';
-import { Permission } from '../../../modules/authorization/entities/permission.entity';
-import { RolePermission } from '../../../modules/authorization/entities/role-permission.entity';
-import { Role, RoleKey } from '../../../modules/authorization/entities/role.entity';
-import { ScopeType } from '../../../modules/authorization/types/scope-type';
-import { UserRoleAssignment } from '../../../modules/authorization/entities/user-role-assignment.entity';
+} from '../../src/modules/authorization/constants/permission-catalog';
+import { Permission } from '../../src/modules/authorization/entities/permission.entity';
+import { RolePermission } from '../../src/modules/authorization/entities/role-permission.entity';
+import { Role, RoleKey } from '../../src/modules/authorization/entities/role.entity';
+import { ScopeType } from '../../src/modules/authorization/types/scope-type';
+import { UserRoleAssignment } from '../../src/modules/authorization/entities/user-role-assignment.entity';
 import {
   assertPasswordPolicy,
   argonOptionsFor,
   PasswordService,
-} from '../../../modules/auth/services/password.service';
+} from '../../src/modules/auth/services/password.service';
 import {
   Organization,
   OrganizationPlan,
-} from '../../../modules/organizations/entities/organization.entity';
-import { User, UserStatus } from '../../../modules/users/entities/user.entity';
+} from '../../src/modules/organizations/entities/organization.entity';
+import { User } from '../../src/modules/users/entities/user.entity';
+import { UserStatus } from '../../src/modules/users/types/user-status';
 
 const DEMO_USERS: readonly { email: string; fullName: string; role: RoleKey }[] = [
   { email: 'demo@rentmate.local', fullName: 'Demo Owner', role: RoleKey.OrgOwner },

@@ -23,7 +23,7 @@ export class PermissionsGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<Request>();
-    const user = (request as any).user;
+    const user = request.user;
     if (!user) {
       throw new AppException(
         ErrorCode.UNAUTHORIZED,

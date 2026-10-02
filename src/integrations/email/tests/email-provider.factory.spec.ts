@@ -7,10 +7,10 @@ describe('EmailProvider Factory & Worker Fast-Fail', () => {
   it('throws an error for unsupported EMAIL_PROVIDER', () => {
     const invalidConfig = {
       email: {
-        provider: 'invalid-provider' as any,
+        provider: 'invalid-provider' as unknown as 'smtp',
         smtp: { host: 'smtp.gmail.com', port: 465, secure: true },
       },
-    } as AppConfigService;
+    } as unknown as AppConfigService;
 
     expect(() => createEmailProvider(invalidConfig)).toThrow(
       'Unsupported email provider: invalid-provider',
@@ -23,7 +23,7 @@ describe('EmailProvider Factory & Worker Fast-Fail', () => {
         provider: 'smtp',
         smtp: { host: 'smtp.gmail.com', port: 465, secure: true },
       },
-    } as AppConfigService;
+    } as unknown as AppConfigService;
 
     expect(() => new SmtpEmailProvider(incompleteConfig)).toThrow(
       'Failed fast: missing required SMTP configuration',

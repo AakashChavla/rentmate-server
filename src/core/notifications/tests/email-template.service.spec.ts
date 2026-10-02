@@ -1,4 +1,5 @@
-import { BRAND_NAME, EmailTemplateService } from '../src/core/notifications/email-template.service';
+import type { OtpPurpose } from '../email-job.types';
+import { BRAND_NAME, EmailTemplateService } from '../email-template.service';
 
 describe('EmailTemplateService', () => {
   let service: EmailTemplateService;
@@ -48,7 +49,7 @@ describe('EmailTemplateService', () => {
       to: 'user@example.com',
       data: {
         code: '<script>alert("xss")</script>',
-        purpose: 'CUSTOM_<TAG>' as any,
+        purpose: 'CUSTOM_<TAG>' as unknown as OtpPurpose,
         expiresInMinutes: 5,
       },
     });

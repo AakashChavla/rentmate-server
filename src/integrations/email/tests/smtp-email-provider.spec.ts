@@ -29,10 +29,15 @@ describe('SmtpEmailProvider', () => {
     return {
       provider,
       triggerFailure: () => {
-        jest.spyOn(streamTransporter as any, 'sendMail').mockRejectedValueOnce({
-          code: 'ETIMEDOUT',
-          message: 'Connection timed out',
-        });
+        jest
+          .spyOn(
+            streamTransporter as unknown as { sendMail: (...args: unknown[]) => Promise<unknown> },
+            'sendMail',
+          )
+          .mockRejectedValueOnce({
+            code: 'ETIMEDOUT',
+            message: 'Connection timed out',
+          });
       },
     };
   });
@@ -50,10 +55,15 @@ describe('SmtpEmailProvider', () => {
     });
 
     it('maps connection timeout (ETIMEDOUT) to retryable EmailDeliveryError', async () => {
-      jest.spyOn(transporter as any, 'sendMail').mockRejectedValueOnce({
-        code: 'ETIMEDOUT',
-        message: 'Connection timeout',
-      });
+      jest
+        .spyOn(
+          transporter as unknown as { sendMail: (...args: unknown[]) => Promise<unknown> },
+          'sendMail',
+        )
+        .mockRejectedValueOnce({
+          code: 'ETIMEDOUT',
+          message: 'Connection timeout',
+        });
 
       try {
         await provider.send({ to: 't@ex.com', subject: 's', html: 'h', text: 't' });
@@ -66,10 +76,15 @@ describe('SmtpEmailProvider', () => {
     });
 
     it('maps 535 bad credentials to non-retryable EmailDeliveryError', async () => {
-      jest.spyOn(transporter as any, 'sendMail').mockRejectedValueOnce({
-        responseCode: 535,
-        message: '5.7.8 Error: authentication failed',
-      });
+      jest
+        .spyOn(
+          transporter as unknown as { sendMail: (...args: unknown[]) => Promise<unknown> },
+          'sendMail',
+        )
+        .mockRejectedValueOnce({
+          responseCode: 535,
+          message: '5.7.8 Error: authentication failed',
+        });
 
       try {
         await provider.send({ to: 't@ex.com', subject: 's', html: 'h', text: 't' });
@@ -82,10 +97,15 @@ describe('SmtpEmailProvider', () => {
     });
 
     it('maps 550 invalid recipient to non-retryable EmailDeliveryError', async () => {
-      jest.spyOn(transporter as any, 'sendMail').mockRejectedValueOnce({
-        responseCode: 550,
-        message: '5.1.1 User unknown',
-      });
+      jest
+        .spyOn(
+          transporter as unknown as { sendMail: (...args: unknown[]) => Promise<unknown> },
+          'sendMail',
+        )
+        .mockRejectedValueOnce({
+          responseCode: 550,
+          message: '5.1.1 User unknown',
+        });
 
       try {
         await provider.send({ to: 't@ex.com', subject: 's', html: 'h', text: 't' });
@@ -98,11 +118,16 @@ describe('SmtpEmailProvider', () => {
     });
 
     it('maps Gmail daily sending limit (5.4.5) to non-retryable EmailDeliveryError and logs ERROR', async () => {
-      jest.spyOn(transporter as any, 'sendMail').mockRejectedValueOnce({
-        responseCode: 554,
-        response: '5.4.5 Daily user sending limit exceeded',
-        message: 'Daily user sending limit exceeded',
-      });
+      jest
+        .spyOn(
+          transporter as unknown as { sendMail: (...args: unknown[]) => Promise<unknown> },
+          'sendMail',
+        )
+        .mockRejectedValueOnce({
+          responseCode: 554,
+          response: '5.4.5 Daily user sending limit exceeded',
+          message: 'Daily user sending limit exceeded',
+        });
 
       try {
         await provider.send({ to: 'target@example.com', subject: 's', html: 'h', text: 't' });

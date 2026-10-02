@@ -10,7 +10,7 @@ import { AppModule } from '../../src/app.module';
 import { ErrorCode } from '../../src/core/errors/error-codes';
 import { createValidationPipe } from '../../src/core/http/pipes/validation.pipe';
 import { CookieName } from '../../src/shared/auth-cookies';
-import { seedDatabase } from '../../src/core/database/seeds/run-seed';
+import { seedDatabase } from '../../tools/seeds/run-seed';
 import { validateEnv } from '../../src/core/config/env.schema';
 import { PasswordService } from '../../src/modules/auth/services/password.service';
 import { Role, RoleKey } from '../../src/modules/authorization/entities/role.entity';
@@ -22,7 +22,8 @@ import {
 } from '../../src/modules/organizations/entities/organization.entity';
 import { QueueName } from '../../src/core/queue/queue.constants';
 import type { EmailJob } from '../../src/core/notifications/email-job.types';
-import { User, UserStatus } from '../../src/modules/users/entities/user.entity';
+import { User } from '../../src/modules/users/entities/user.entity';
+import { UserStatus } from '../../src/modules/users/types/user-status';
 
 import { EmailProvider } from '../../src/integrations/email/email.provider';
 import { FakeEmailProvider } from '../../src/integrations/email/tests/fake-email.provider';
@@ -249,14 +250,15 @@ describe('Auth and RBAC (e2e)', () => {
   async function latestOtp(email: string, purpose: string): Promise<string> {
     const queue = app.get<Queue<EmailJob>>(getQueueToken(QueueName.NotificationEmail));
     const queued = await queue.getJobs(['waiting', 'delayed', 'completed', 'active']);
-    const match = queued
-      .reverse()
-      .find(
-        (job) =>
-          job.data.to === email &&
-          ((job.data as any).data?.purpose === purpose || (job.data as any).purpose === purpose),
+    const match = queued.reverse().find((job) => {
+      const payload = job.data as unknown as { purpose?: string; data?: { purpose?: string } };
+      return (
+        job.data.to === email && (payload.data?.purpose === purpose || payload.purpose === purpose)
       );
-    const code = (match?.data as any)?.data?.code ?? (match?.data as any)?.code;
+    });
+    const payload = match?.data as unknown as
+      { code?: string; data?: { code?: string } } | undefined;
+    const code = payload?.data?.code ?? payload?.code;
     if (!code) {
       throw new Error(`OTP job for ${email} was not queued`);
     }

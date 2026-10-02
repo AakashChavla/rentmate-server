@@ -13,7 +13,7 @@ export function createDatabaseOptions(input: {
     migrationsRun: false,
     uuidExtension: 'pgcrypto',
     namingStrategy: new SnakeNamingStrategy(),
-    entities: [toGlob(join(__dirname, '..', 'modules', '**', '*.entity.{ts,js}'))],
+    entities: [toGlob(join(__dirname, '..', '..', 'modules', '**', '*.entity.{ts,js}'))],
     migrations: [toGlob(join(__dirname, 'migrations', '*.{ts,js}'))],
     migrationsTableName: 'typeorm_migrations',
     logging: input.nodeEnv === 'development' ? ['error', 'warn'] : ['error'],

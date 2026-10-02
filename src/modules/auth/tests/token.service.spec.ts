@@ -6,6 +6,7 @@ import { AppException } from '../../../core/errors/app.exception';
 import { RefreshToken } from '../entities/refresh-token.entity';
 import { TokenService } from '../services/token.service';
 import { AppConfigService } from '../../../core/config/app-config.service';
+import type { TransactionRunner } from '../../../core/database/transaction-runner';
 
 describe('TokenService', () => {
   let tokens: TokenService;
@@ -23,7 +24,7 @@ describe('TokenService', () => {
           useFactory: (jwtService: JwtService) =>
             new TokenService(
               store.asRepository(),
-              { run: (fn: any) => fn() } as any,
+              { run: <T>(fn: () => Promise<T>) => fn() } as unknown as TransactionRunner,
               jwtService,
               config(),
             ),

@@ -59,3 +59,11 @@ export function buildClearedAuthCookies(config: CookieConfig): AuthCookie[] {
     options: { ...cookie.options, maxAge: 0 },
   }));
 }
+
+export function readCookie(
+  request: { cookies?: Record<string, unknown> },
+  name: string,
+): string | undefined {
+  const value = request.cookies?.[name];
+  return typeof value === 'string' && value.length > 0 ? value : undefined;
+}

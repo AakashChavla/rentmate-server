@@ -1,11 +1,7 @@
 import { Column, Entity, Index } from 'typeorm';
 import { TenantBaseEntity } from '../../../core/database/base/tenant-base.entity';
 
-export enum UserStatus {
-  Invited = 'INVITED',
-  Active = 'ACTIVE',
-  Suspended = 'SUSPENDED',
-}
+import { UserStatus } from '../types/user-status';
 
 @Entity('users')
 @Index('users_organization_id_created_at_id_idx', ['organizationId', 'createdAt', 'id'])

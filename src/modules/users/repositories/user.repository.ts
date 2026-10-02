@@ -1,15 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { TenantScopedRepository } from '../../../core/database/base/tenant-scoped.repository';
-import { User, UserStatus } from '../entities/user.entity';
+import { User } from '../entities/user.entity';
+import type { UserListQuery } from '../types/user-list-query';
 import { decodeCursor, encodeCursor } from '../../../shared/cursor';
-
-export interface UserListQuery {
-  status?: UserStatus;
-  search?: string;
-  cursor?: string;
-  limit?: number;
-}
 
 @Injectable()
 export class UserRepository extends TenantScopedRepository<User> {
@@ -18,17 +12,17 @@ export class UserRepository extends TenantScopedRepository<User> {
   }
 
   /**
-   * The ONLY unscoped database query allowed in rentmate-server.
+   * The ONLY unscoped database query allowed in rentmate-server for users.
    * Executed strictly during initial authentication login / OTP lookups before the tenant organization is known.
    */
   async findByEmailForAuth(email: string): Promise<User | null> {
     const normalizedEmail = email.toLowerCase().trim();
-    return this.repo.findOne({ where: { email: normalizedEmail } });
+    return this.unscopedForAuth.findOne({ where: { email: normalizedEmail } });
   }
 
   async findByIdInOrg(organizationId: string, userId: string): Promise<User | null> {
     const orgId = this.getOrgId(organizationId);
-    return this.repo.findOne({ where: { id: userId, organizationId: orgId } });
+    return this.findOneScoped(orgId, { where: { id: userId } });
   }
 
   async listPage(
@@ -38,9 +32,7 @@ export class UserRepository extends TenantScopedRepository<User> {
     const orgId = this.getOrgId(organizationId);
     const limit = query.limit ?? 20;
 
-    const qb = this.repo
-      .createQueryBuilder('user')
-      .where('user.organization_id = :orgId', { orgId });
+    const qb = this.scopedQueryBuilder(orgId, 'user');
 
     if (query.status) {
       qb.andWhere('user.status = :status', { status: query.status });
@@ -77,12 +69,16 @@ export class UserRepository extends TenantScopedRepository<User> {
 
   async saveUser(user: Partial<User> & { organizationId: string }): Promise<User> {
     const orgId = this.getOrgId(user.organizationId);
-    const entity = this.repo.create({ ...user, organizationId: orgId });
-    return this.repo.save(entity);
+    const normalized = {
+      ...user,
+      organizationId: orgId,
+      ...(user.email ? { email: user.email.toLowerCase().trim() } : {}),
+    };
+    return this.saveScoped(orgId, normalized);
   }
 
   async updateLastLogin(organizationId: string, userId: string): Promise<void> {
     const orgId = this.getOrgId(organizationId);
-    await this.repo.update({ id: userId, organizationId: orgId }, { lastLoginAt: new Date() });
+    await this.updateScoped(orgId, { id: userId }, { lastLoginAt: new Date() });
   }
 }

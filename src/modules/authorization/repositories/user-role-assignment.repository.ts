@@ -27,10 +27,8 @@ export class UserRoleAssignmentRepository extends TenantScopedRepository<UserRol
     if (userIds.length === 0) return [];
     const orgId = this.getOrgId(organizationId);
 
-    const rows = await this.repo
-      .createQueryBuilder('assignment')
+    const rows = await this.scopedQueryBuilder(orgId, 'assignment')
       .innerJoin(Role, 'role', 'role.id = assignment.role_id')
-      .where('assignment.organization_id = :orgId', { orgId })
       .andWhere('assignment.user_id IN (:...userIds)', { userIds })
       .andWhere('assignment.deleted_at IS NULL')
       .select([
@@ -66,16 +64,15 @@ export class UserRoleAssignmentRepository extends TenantScopedRepository<UserRol
     assignmentId: string,
   ): Promise<UserRoleAssignment | null> {
     const orgId = this.getOrgId(organizationId);
-    return this.repo.findOne({
-      where: { id: assignmentId, userId, organizationId: orgId },
+    return this.findOneScoped(orgId, {
+      where: { id: assignmentId, userId },
     });
   }
 
   async countActiveOwners(organizationId: string, orgOwnerRoleId: string): Promise<number> {
     const orgId = this.getOrgId(organizationId);
-    const rows = await this.repo.find({
+    const rows = await this.listScoped(orgId, {
       where: {
-        organizationId: orgId,
         roleId: orgOwnerRoleId,
         scopeType: ScopeType.Organization,
         scopeId: orgId,
@@ -91,20 +88,22 @@ export class UserRoleAssignmentRepository extends TenantScopedRepository<UserRol
     data: Partial<UserRoleAssignment>,
   ): Promise<UserRoleAssignment> {
     const orgId = this.getOrgId(organizationId);
-    const entity = this.repo.create({ ...data, organizationId: orgId });
-    return this.repo.save(entity);
+    return this.saveScoped(orgId, data);
   }
 
   async softDeleteAssignment(organizationId: string, assignmentId: string): Promise<void> {
     const orgId = this.getOrgId(organizationId);
-    await this.repo.softDelete({ id: assignmentId, organizationId: orgId });
+    await this.softDeleteScoped(orgId, { id: assignmentId });
   }
 
-  async findGrantsByUserId(userId: string): Promise<UserRoleAssignmentRow[]> {
-    const rows = await this.repo
-      .createQueryBuilder('assignment')
+  async findGrantsByUserId(
+    organizationId: string,
+    userId: string,
+  ): Promise<UserRoleAssignmentRow[]> {
+    const orgId = this.getOrgId(organizationId);
+    const rows = await this.scopedQueryBuilder(orgId, 'assignment')
       .innerJoin(Role, 'role', 'role.id = assignment.role_id')
-      .where('assignment.user_id = :userId', { userId })
+      .andWhere('assignment.user_id = :userId', { userId })
       .andWhere('assignment.deleted_at IS NULL')
       .select([
         'assignment.user_id AS user_id',

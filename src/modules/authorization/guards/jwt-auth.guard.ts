@@ -14,10 +14,10 @@ import { ALLOW_REFRESH_KEY } from '../../../core/http/decorators/allow-refresh.d
 import type { AuthenticatedUser } from '../../../core/http/decorators/current-user.decorator';
 import { IS_PUBLIC_KEY } from '../../../core/http/decorators/public.decorator';
 import { AppException } from '../../../core/errors/app.exception';
-import { CookieName } from '../../../shared/auth-cookies';
+import { CookieName, readCookie } from '../../../shared/auth-cookies';
 import { TokenService } from '../../auth/services/token.service';
 import type { AccessTokenClaims } from '../../auth/types/token.types';
-import { UserStatus } from '../../users/entities/user.entity';
+import { UserStatus } from '../../users/types/user-status';
 import { PermissionService } from '../services/permission.service';
 
 @Injectable()
@@ -69,7 +69,7 @@ export class JwtAuthGuard implements CanActivate {
       isPlatformAdmin: profile.isPlatformAdmin,
       grants: profile.grants,
     };
-    (request as any).user = user;
+    request.user = user;
     TenantContext.setVerifiedIdentity({
       userId: user.id,
       organizationId: user.organizationId,
@@ -83,7 +83,7 @@ export class JwtAuthGuard implements CanActivate {
       try {
         return await this.tokens.verifyAccess(access);
       } catch (error) {
-        if (!allowRefresh || !isExpired(error)) {
+        if (!allowRefresh || AppException.getErrorCode(error) !== ErrorCode.TOKEN_EXPIRED) {
           throw error;
         }
       }
@@ -102,24 +102,10 @@ export class JwtAuthGuard implements CanActivate {
   }
 }
 
-function readCookie(request: Request, name: string): string | undefined {
-  const value = request.cookies?.[name] as unknown;
-  return typeof value === 'string' && value.length > 0 ? value : undefined;
-}
-
 function unauthorized(): AppException {
   return new AppException(
     ErrorCode.UNAUTHORIZED,
     'Authentication required',
     HttpStatus.UNAUTHORIZED,
-  );
-}
-
-function isExpired(error: unknown): boolean {
-  return (
-    error instanceof AppException &&
-    typeof error.getResponse() === 'object' &&
-    error.getResponse() !== null &&
-    (error.getResponse() as { code?: string }).code === ErrorCode.TOKEN_EXPIRED
   );
 }

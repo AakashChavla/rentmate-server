@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, IsNull } from 'typeorm';
 import { TenantScopedRepository } from '../../../core/database/base/tenant-scoped.repository';
-import { OtpPurpose, OtpVerification } from '../entities/otp-verification.entity';
+import { OtpVerification } from '../entities/otp-verification.entity';
+import { OtpPurpose } from '../types/otp-purpose';
 
 @Injectable()
 export class OtpVerificationRepository extends TenantScopedRepository<OtpVerification> {
@@ -15,11 +16,10 @@ export class OtpVerificationRepository extends TenantScopedRepository<OtpVerific
     purpose: OtpPurpose | string,
   ): Promise<OtpVerification | null> {
     const orgId = this.getOrgId(organizationId);
-    return this.repo.findOne({
+    return this.findOneScoped(orgId, {
       where: {
         userId,
         purpose: purpose as OtpPurpose,
-        organizationId: orgId,
         consumedAt: IsNull(),
       },
       order: { createdAt: 'DESC' },
@@ -30,17 +30,23 @@ export class OtpVerificationRepository extends TenantScopedRepository<OtpVerific
     otp: Partial<OtpVerification> & { organizationId: string },
   ): Promise<OtpVerification> {
     const orgId = this.getOrgId(otp.organizationId);
-    const entity = this.repo.create({ ...otp, organizationId: orgId });
-    return this.repo.save(entity);
+    return this.saveScoped(orgId, otp);
   }
 
-  async updateOtp(otp: OtpVerification): Promise<OtpVerification> {
-    const orgId = this.getOrgId(otp.organizationId);
-    return this.repo.save({ ...otp, organizationId: orgId });
+  async updateOtp(
+    organizationIdOrOtp: string | OtpVerification,
+    otp?: OtpVerification,
+  ): Promise<OtpVerification> {
+    const targetOtp = typeof organizationIdOrOtp === 'string' ? otp! : organizationIdOrOtp;
+    const orgId =
+      typeof organizationIdOrOtp === 'string'
+        ? this.getOrgId(organizationIdOrOtp)
+        : this.getOrgId(targetOtp.organizationId);
+    return this.saveScoped(orgId, targetOtp);
   }
 
   async consumeOtp(organizationId: string, id: string): Promise<void> {
     const orgId = this.getOrgId(organizationId);
-    await this.repo.update({ id, organizationId: orgId }, { consumedAt: new Date() });
+    await this.updateScoped(orgId, { id }, { consumedAt: new Date() });
   }
 }

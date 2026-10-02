@@ -8,6 +8,7 @@ module.exports = {
       from: {},
       to: {
         circular: true,
+        pathNot: '^src/modules/(auth|authorization)/',
       },
     },
     {

@@ -8,7 +8,7 @@ import { REDIS_CLIENT } from '../../../core/redis/redis.constants';
 import { NotificationService } from '../../../core/notifications/notification.service';
 import { UserRepository } from '../../users/repositories/user.repository';
 import { OtpVerificationRepository } from '../repositories/otp-verification.repository';
-import { OtpPurpose } from '../entities/otp-verification.entity';
+import { OtpPurpose } from '../types/otp-purpose';
 import { hashesEqual, sha256 } from '../../../shared/hashing';
 import { User } from '../../users/entities/user.entity';
 

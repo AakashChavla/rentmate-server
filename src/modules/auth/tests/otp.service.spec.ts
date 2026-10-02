@@ -1,9 +1,12 @@
 import { ErrorCode } from '../../../core/errors/error-codes';
 import { AppConfigService } from '../../../core/config/app-config.service';
-import { OtpPurpose, OtpVerification } from '../entities/otp-verification.entity';
+import { OtpVerification } from '../entities/otp-verification.entity';
+import { OtpPurpose } from '../types/otp-purpose';
 import { OtpService } from '../services/otp.service';
 import { sha256 } from '../../../shared/hashing';
-import { User, UserStatus } from '../../users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
+import type { UserRepository } from '../../users/repositories/user.repository';
+import { UserStatus } from '../../users/types/user-status';
 
 describe('OtpService', () => {
   const users = new Map<string, User>();
@@ -24,7 +27,9 @@ describe('OtpService', () => {
     };
     otp = new OtpService(
       memoryRepository(rows) as never,
-      { findByEmailForAuth: async (email: string) => users.get(email) ?? null } as any,
+      {
+        findByEmailForAuth: async (email: string) => users.get(email) ?? null,
+      } as unknown as UserRepository,
       redis as never,
       notificationService as never,
       { authDevLogOtp: false } as AppConfigService,

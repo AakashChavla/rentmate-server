@@ -1,4 +1,5 @@
 export { UsersModule } from './users.module';
 export { UserDirectory, type UserRecord } from './contracts/user-directory.contract';
-export { UserStatus } from './entities/user.entity';
-export type { UserView, UserListQuery } from './services/users.service';
+export { UserStatus } from './types/user-status';
+export type { UserListQuery } from './types/user-list-query';
+export type { UserView } from './services/users.service';

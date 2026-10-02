@@ -1,9 +1,10 @@
 import type { Job } from 'bullmq';
 import { UnrecoverableError } from 'bullmq';
-import { EmailTemplateService } from '../src/core/notifications/email-template.service';
-import { EmailProcessor } from '../src/core/notifications/email.processor';
-import { maskEmail } from '../src/shared/mask';
-import { FakeEmailProvider } from '../src/integrations/email/tests/fake-email.provider';
+import type { EmailJob } from '../email-job.types';
+import { EmailTemplateService } from '../email-template.service';
+import { EmailProcessor } from '../email.processor';
+import { maskEmail } from '../../../shared/mask';
+import { FakeEmailProvider } from '../../../integrations/email/tests/fake-email.provider';
 
 describe('EmailProcessor', () => {
   let processor: EmailProcessor;
@@ -30,9 +31,9 @@ describe('EmailProcessor', () => {
           expiresInMinutes: 5,
         },
       },
-    } as unknown as Job;
+    } as unknown as Job<EmailJob>;
 
-    await (processor as any).handle(job);
+    await processor.process(job);
 
     expect(fakeProvider.outbox).toHaveLength(1);
     expect(fakeProvider.outbox[0]?.to).toBe('alice@example.com');
@@ -55,9 +56,9 @@ describe('EmailProcessor', () => {
           expiresInMinutes: 5,
         },
       },
-    } as unknown as Job;
+    } as unknown as Job<EmailJob>;
 
-    await expect((processor as any).handle(job)).rejects.toThrow('Fake provider error');
+    await expect(processor.process(job)).rejects.toThrow('Fake provider error');
   });
 
   it('converts non-retryable delivery errors into UnrecoverableError', async () => {
@@ -76,9 +77,9 @@ describe('EmailProcessor', () => {
           expiresInMinutes: 5,
         },
       },
-    } as unknown as Job;
+    } as unknown as Job<EmailJob>;
 
-    await expect((processor as any).handle(job)).rejects.toThrow(UnrecoverableError);
+    await expect(processor.process(job)).rejects.toThrow(UnrecoverableError);
   });
 
   it('masks email addresses correctly', () => {

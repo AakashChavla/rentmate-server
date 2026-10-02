@@ -68,8 +68,19 @@ export class TenantRepository<T extends TenantBaseEntity & ObjectLiteral> {
     return this.repository.create(this.stampOrganization(orgId, entityLike));
   }
 
-  save(organizationId: string, entityLike: DeepPartial<T>): Promise<T> {
+  async save(organizationId: string, entityLike: DeepPartial<T>): Promise<T> {
     const orgId = this.requireOrganizationId(organizationId);
+    const entity = entityLike as Record<string, unknown>;
+    if (entity.id && typeof entity.id === 'string') {
+      const existing = await this.repository.findOne({
+        where: { id: entity.id } as FindOptionsWhere<T>,
+      });
+      if (existing && existing.organizationId !== orgId) {
+        throw new TenantScopeMissingError(
+          `Cross-tenant mutation denied: entity ${entity.id} belongs to another organization`,
+        );
+      }
+    }
     return this.repository.save(this.stampOrganization(orgId, entityLike));
   }
 

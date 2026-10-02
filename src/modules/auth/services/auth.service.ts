@@ -6,8 +6,9 @@ import {
   type AuthProfile,
 } from '../../authorization/services/permission.service';
 import { UserRepository } from '../../users/repositories/user.repository';
-import { User, UserStatus } from '../../users/entities/user.entity';
-import { OtpPurpose } from '../entities/otp-verification.entity';
+import { User } from '../../users/entities/user.entity';
+import { UserStatus } from '../../users/types/user-status';
+import { OtpPurpose } from '../types/otp-purpose';
 import { OtpService } from './otp.service';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';

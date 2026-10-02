@@ -9,7 +9,7 @@ export class RequestIdMiddleware implements NestMiddleware {
     const existing = typeof req.id === 'string' && req.id.length > 0 ? req.id : undefined;
     const requestId = existing ?? resolveRequestId(req.header('x-request-id'));
     req.id = requestId;
-    (req as any).requestId = requestId;
+    req.requestId = requestId;
     res.setHeader('X-Request-ID', requestId);
     TenantContext.run({ requestId }, () => next());
   }

@@ -23,8 +23,12 @@ This document dictates database query rules, layer separation, custom repositori
 ### Cross-Tenant Isolation Rule
 If a request attempts to access an entity belonging to another organization, the query MUST return `404 NOT_FOUND` (never `403 FORBIDDEN`), preventing cross-tenant resource enumeration.
 
-### Unscoped Query Exemption
-The ONLY database query allowed to omit `organization_id` is `UserRepository.findByEmailForAuth` during initial authentication before the organization context is established.
+### Allow-Listed Unscoped Query Exemptions
+The ONLY database queries allowed to omit `organization_id` (accessed via `unscopedForAuth`) are:
+1. `UserRepository.findByEmailForAuth(email)`: Executed during initial login/authentication lookup before organization context is established.
+2. `RefreshTokenRepository.findByJti(jti)`: Executed during refresh token lookup by JTI before payload context is verified.
+
+All other tenant repository operations MUST use `TenantScopedRepository` scoped helpers (`findOneScoped`, `listScoped`, `saveScoped`, `updateScoped`, `softDeleteScoped`, `scopedQueryBuilder`).
 
 ---
 
