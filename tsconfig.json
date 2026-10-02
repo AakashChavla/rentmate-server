@@ -20,6 +20,6 @@
     "noImplicitReturns": true,
     "useDefineForClassFields": false
   },
-  "include": ["src/**/*", "test/**/*"],
+  "include": ["src/**/*", "test/**/*", "tools/**/*"],
   "exclude": ["node_modules", "dist", "coverage"]
 }
