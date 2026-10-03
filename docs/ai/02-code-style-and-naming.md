@@ -1,0 +1,1 @@
+Use strict TypeScript, no explicit any, no console calls in application code, at most 300 lines per file, 50 lines per function and complexity 10. Use single quotes, two spaces and 100 columns. Name backend files in kebab-case with role suffixes; frontend components use PascalCase filenames.

@@ -1,0 +1,1 @@
+Use in-memory repositories for unit tests, real PostgreSQL for repository and transaction integration tests, and real PostgreSQL/Redis for e2e. Test tenant isolation, IDOR, cookie rotation/revocation, OTP budgets, last-owner races, route metadata and architecture violations. Report unverified infrastructure checks precisely.

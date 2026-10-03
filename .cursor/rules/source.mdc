@@ -1,0 +1,6 @@
+---
+description: Source conventions
+globs: src/**/*.ts,src/**/*.tsx
+alwaysApply: false
+---
+Follow docs/ai/02-code-style-and-naming.md and docs/ai/07-security-and-logging.md.

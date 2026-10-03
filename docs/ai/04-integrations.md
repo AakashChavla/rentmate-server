@@ -1,0 +1,1 @@
+Use abstract contract classes as dependency-injection tokens. Keep vendor libraries inside adapters. Implement SMTP only during this rebuild. The API enqueues email without SMTP configuration; the worker validates SMTP configuration. Map retryable provider failures explicitly.

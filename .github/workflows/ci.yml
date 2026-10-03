@@ -1,0 +1,19 @@
+name: CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable
+      - run: yarn install --frozen-lockfile
+      - run: yarn check
+      - run: yarn rules:proof
+      - run: yarn build
+      - run: corepack pnpm@10.11.0 import
+      - run: corepack pnpm@10.11.0 audit

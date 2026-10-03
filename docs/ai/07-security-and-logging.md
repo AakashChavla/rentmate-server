@@ -1,0 +1,1 @@
+Never read, print or commit real secrets. Reject placeholder secrets at startup. Use Argon2id, HS256 with issuer/audience checks, atomic refresh rotation and Redis revocation markers. Mask email/phone with shared helpers. Pino redacts cookies, passwords, tokens and codes. Development OTP logging requires the explicit development-only configuration.

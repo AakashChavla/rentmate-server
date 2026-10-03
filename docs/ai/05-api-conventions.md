@@ -1,0 +1,1 @@
+Use /api/v1, cookie authentication and the shared success/error envelope. Use created_at/id keyset pagination. Reject malformed cursors with 400. Deny routes by default. Export OpenAPI on the server and generate client types from it; never invent missing endpoints.

@@ -1,0 +1,1 @@
+Verify layering, public module/feature APIs, deny-by-default routes, scoped targeted writes, transaction boundaries, cache invalidation, masked logging, accessibility, tests and OpenAPI consistency. Check all commands required by the current milestone before declaring it complete.

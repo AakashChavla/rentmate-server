@@ -1,0 +1,2 @@
+corepack yarn check
+corepack yarn build

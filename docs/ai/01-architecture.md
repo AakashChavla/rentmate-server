@@ -1,0 +1,1 @@
+Use a modular monolith. Platform code never imports business modules. Follow the binding request before the architecture reference. Ship vertical slices after foundation and authentication are verified.

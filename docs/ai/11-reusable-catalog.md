@@ -1,0 +1,1 @@
+Phase 1 helpers: src/core/config/environment.ts validates configuration without logging values. Unit tests cover accepted and rejected settings. Codegen provides documented context/feature directories; repository/controller/migration implementation follows the corresponding skill. Database, cache, queue, auth and UI helpers remain pending.

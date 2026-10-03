@@ -1,0 +1,1 @@
+Work only on the rebuild branch. Use Conventional Commits for each green milestone. Preserve legacy tags. Never push, amend, rewrite history or change remotes. Execute M0-M9 in order. Stop at the last verified milestone when the execution budget is insufficient and record remaining work.

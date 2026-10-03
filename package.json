@@ -1,0 +1,43 @@
+{
+  "name": "rentmate-server",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.14.0 <23",
+    "yarn": "1.22.22"
+  },
+  "packageManager": "yarn@1.22.22",
+  "scripts": {
+    "rules:check": "node tools/check-rules.ts",
+    "rules:proof": "node tools/check-rules.proof.cjs",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --config vitest.config.unit.ts",
+    "test:integration": "vitest run --config vitest.config.integration.ts",
+    "check": "yarn rules:check && yarn lint && yarn typecheck && yarn test",
+    "prepare": "husky",
+    "generate": "plop --plopfile codegen/plopfile.cjs",
+    "dev": "tsx watch src/main.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "start": "node dist/main.js",
+    "docker": "docker compose up --build -d"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0",
+    "husky": "^9.1.7",
+    "plop": "^4.0.0",
+    "tsx": "^4.20.0"
+  }
+}

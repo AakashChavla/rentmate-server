@@ -1,0 +1,5 @@
+---
+description: Canonical engineering rules
+alwaysApply: true
+---
+Follow AGENTS.md and docs/ai/01-architecture.md.

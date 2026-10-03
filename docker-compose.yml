@@ -1,0 +1,43 @@
+name: rentmate
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: rentmate
+      POSTGRES_PASSWORD: local-development-only
+      POSTGRES_DB: rentmate
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rentmate -d rentmate"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+  server:
+    build: .
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      CLIENT_ORIGIN: http://localhost:3000
+      DATABASE_URL: postgresql://rentmate:local-development-only@postgres:5432/rentmate
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "127.0.0.1:3001:3001"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+volumes:
+  postgres-data:
