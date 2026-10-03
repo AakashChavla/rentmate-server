@@ -9,3 +9,7 @@ yarn i18n:check compares missing/extra keys and ICU placeholders, and rejects un
 
 All current hi keys are authored by the assistant: server common.healthLive; client common.brand, common.title, common.subtitle, common.start, common.language, common.english, common.hindi, common.status, common.ready. Human review is required before production copy approval.
 Errors, validation, emails and documents namespaces will be added when first consumed; empty unused catalogs are not created.
+
+## Phase 1 translation review
+
+Every current Hindi entry in the server common/errors/validation catalogs and client messages catalogs was authored by the assistant and requires human review. This includes landing copy, navigation, placeholders, validation, transport errors and accessibility labels. Emails/documents remain unimplemented. Header negotiation is implemented server-side; user and organization locale hooks arrive with authentication.

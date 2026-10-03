@@ -27,6 +27,7 @@ export default ts.config(
     },
     rules: {
       'no-console': 'error',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       'max-lines': ['error', { max: 300, skipBlankLines: true, skipComments: true }],
       'max-lines-per-function': [
         'error',
@@ -61,11 +62,12 @@ export default ts.config(
       '**/*.repository.ts',
       '**/*.module.ts',
       'src/core/database/**/*.ts',
+      'src/test/**/*.ts',
     ],
     rules: { 'no-restricted-imports': 'off' },
   },
   {
-    files: ['**/*.constants.ts', '**/*.spec.ts', 'tools/**/*.ts'],
+    files: ['**/*.constants.ts', '**/*.spec.ts', 'tools/**/*.ts', 'src/test/**/*.ts'],
     rules: { '@typescript-eslint/no-magic-numbers': 'off', 'no-restricted-syntax': 'off' },
   },
 );

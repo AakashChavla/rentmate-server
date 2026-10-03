@@ -5,6 +5,22 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: rentmate
+          POSTGRES_DB: rentmate
+          POSTGRES_PASSWORD: foundation-ci-fixture-only
+        ports: ['5432:5432']
+        options: --health-cmd "pg_isready -U rentmate -d rentmate" --health-interval 5s --health-timeout 3s --health-retries 15
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: --health-cmd "redis-cli ping" --health-interval 5s --health-timeout 3s --health-retries 15
+    env:
+      DB_PASSWORD: foundation-ci-fixture-only
+      REDIS_URL: redis://localhost:6379
     steps:
       - uses: actions/checkout@v4
         with:
@@ -14,7 +30,7 @@ jobs:
           node-version-file: .nvmrc
       - run: corepack enable
       - run: yarn install --frozen-lockfile
-      - run: yarn verify:quick
+      - run: yarn verify
       - run: yarn rules:proof
       - run: yarn i18n:types
       - run: git diff --exit-code

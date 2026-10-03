@@ -1,4 +1,5 @@
 export const LINT_PROOF = [
+  'export function unused(): number { const unusedLocal = 1; return 0; }',
   "import { Entity } from 'typeorm';",
   "export const leak: any = JSON.parse('{}');",
   'export const unsafe = leak.value;',
@@ -25,6 +26,7 @@ export const LINT_PROOF = [
   '}',
 ].join('\n');
 export const EXPECTED_LINT_RULES = [
+  '@typescript-eslint/no-unused-vars',
   'no-console',
   'max-lines',
   'max-lines-per-function',

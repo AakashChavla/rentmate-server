@@ -1,5 +1,21 @@
 # Roadmap and status
 
+## Phase 1 - current
+
+Implemented the NestJS/PostgreSQL/Redis/BullMQ foundation, tenant-scoped adapters and isolation harness, localized HTTP/security/logging platform, migrations, health/readiness, worker entrypoint, OpenAPI export, non-root Docker targets and canonical module/integration placeholders.
+
+The client includes the bilingual animated landing page, light/dark primitives, reduced-motion helpers, admin/tenant/auth shells and all requested route placeholders, injected HTTP/health APIs, disabled refresh scaffold, query policies and generated contracts.
+
+Both repositories passed yarn verify on 2026-10-03: server 18 unit + 6 HTTP e2e + 3 real PostgreSQL/Redis integration tests; client 13 tests and production build. Gate proofs passed: server 42, client 31. The server Compose stack is running, readiness returns 200, API/worker run as UID 1000, and three API replicas are healthy behind Nginx. English/Hindi client HTML smoke checks return 200 with matching lang attributes and nonce CSP.
+
+See [Phase 1 report](15-phase1-report.md) for commands, tree, decisions and current verification limitations. Phase 0 details below are historical, not the current infrastructure status.
+
+Current release blockers: audit findings (server 11 high; client 2 low, 11 moderate, 11 high, 2 critical dependency paths). Requested Next.js 14 remains pinned; do not waive audits. Remote CI/CodeQL/Gitleaks, browser visual/contrast review, production Docker target and the client container build are not yet verified. Browser automation initialization failed; client Docker package downloads repeatedly stalled. All Hindi catalogs need human review. Authentication/verified tenant identity and business authorization are Phase 2 work; navigation permissions are previews.
+
+Decisions: retain TypeORM 0.3 and Nest EventEmitter 3 for this CommonJS/Jest platform; expose tenant pages under /tenant/* to avoid App Router collisions; run migrations as a single service before scaling API; use a non-root Nginx proxy with Docker DNS resolution for three replicas. No business handlers or endpoints are invented.
+
+## Historical Phase 0 record
+
 ## Phase 0
 
 Implemented: engineering charter, pointer checks, ESLint 9, architecture/localization gates, generators, hooks, CI and minimal bilingual applications. Both repositories passed yarn verify:quick on 2026-10-03. See [verification report](14-phase0-report.md).

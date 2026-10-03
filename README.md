@@ -1,29 +1,24 @@
 # RentMate API
 
-Phase 0 provides a minimal NestJS API with validated configuration, Pino, abstract Clock/HealthService ports and localized GET /health/live. Business features and authentication are future phases.
+Phase 1 supplies the NestJS platform: PostgreSQL/TypeORM migrations, Redis, BullMQ ports, tenant-scoped repository primitives, localized envelopes, Pino, security middleware, health probes and a separate worker. Business modules are explicit placeholders; authentication arrives in Phase 2.
 
-Use Node 20.20.2 and Corepack Yarn 1.22.22. Read [AGENTS.md](AGENTS.md) and [status](docs/ai/10-roadmap-and-status.md).
+Use Node 20.20.2 and Corepack Yarn 1.22.22. Read [AGENTS.md](AGENTS.md), [status](docs/ai/10-roadmap-and-status.md) and [Phase 1 report](docs/ai/15-phase1-report.md).
+
+Copy .env.example to an ignored .env and supply your own database credential. Compose loads interpolation values from .env; direct Node execution needs exported environment variables or Node --env-file. Never commit .env.
 
 ```powershell
 corepack enable
 yarn install --frozen-lockfile
-yarn dev
-```
-
-The API defaults to port 3000. Optional environment values are listed in .env.example; configuration is validated at startup. Test English/Hindi with Accept-Language or NEXT_LOCALE on /health/live.
-
-```text
-yarn verify:quick
+docker compose up -d --build
+yarn verify
 yarn rules:proof
-yarn i18n:types
 yarn openapi:export
-yarn gen module
-yarn gen integration
-yarn gen processor
-yarn build
-yarn start
 ```
 
-Always export the server OpenAPI before generating client types. Generated contracts currently contain only the health endpoint. Full yarn verify also invokes infrastructure gates which intentionally fail until Postgres/Redis integration and e2e suites exist.
+The proxy exposes loopback port 3000. /health/live and /health/ready are unwrapped; readiness checks PostgreSQL and Redis. /api/docs and /api/docs-json are development defaults and disabled by default in production. Override DB_EXPOSED_PORT, REDIS_EXPOSED_PORT and API_EXPOSED_PORT when local ports are unavailable. CORS_ORIGIN accepts a comma-separated origin list; TRUST_PROXY is an explicit hop count.
 
-Quick verification passed locally. Dependency audits remain failing; Next.js 14 has critical advisories requiring a newer major version, and braces has an unpatched tooling advisory. Release is blocked. Remote CI/security scanners and Docker/Postgres/Redis were not verified. See [the full report](docs/ai/14-phase0-report.md).
+Migrations run once before API and worker startup. For a scaling check use docker compose up -d --scale api=3: the internal API replicas share PostgreSQL/Redis and Nginx resolves the service dynamically. No business queue handlers are registered yet. WorkerHost is ready to register them in later slices.
+
+Direct development: yarn migration:run, yarn dev and yarn worker:dev with validated environment variables. yarn build/yarn start run compiled API code; Dockerfile prod is non-root and copies dist into the runtime image. Shutdown closes workers, publishers, Redis and database connections.
+
+Export OpenAPI before client yarn api:types. Plop module/integration/processor generators and all strict gates remain available. Integration tests require a dedicated fixture database and create/drop only their own sample tables. Current audits block release; see the report for verified results and external limitations.

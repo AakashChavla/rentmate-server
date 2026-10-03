@@ -22,17 +22,46 @@
           "Health"
         ]
       }
+    },
+    "/health/ready": {
+      "get": {
+        "operationId": "healthReady",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadyHealthDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "",
+        "tags": [
+          "Health"
+        ]
+      }
     }
   },
   "info": {
     "title": "RentMate API",
     "description": "",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "contact": {}
   },
   "tags": [],
   "servers": [],
   "components": {
+    "securitySchemes": {
+      "cookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "rm_access"
+      }
+    },
     "schemas": {
       "LiveHealthDto": {
         "type": "object",
@@ -55,6 +84,25 @@
           "message",
           "timestamp",
           "locale"
+        ]
+      },
+      "ReadyHealthDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "postgres": {
+            "type": "boolean"
+          },
+          "redis": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "status",
+          "postgres",
+          "redis"
         ]
       }
     }

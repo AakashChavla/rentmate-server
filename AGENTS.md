@@ -1,6 +1,6 @@
 # RentMate engineering charter
 
-Read docs/ai/10-roadmap-and-status.md before work. Follow the user's Phase 0 request over ../docs/architecture.html.
+Read docs/ai/10-roadmap-and-status.md before work. Follow the latest user phase request over the reference architecture document.
 
 ## C1 Two-repo contract
 

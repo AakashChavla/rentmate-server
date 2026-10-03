@@ -1,3 +1,4 @@
+import { proveAuthScope } from './proof-auth-scope';
 import { proveLint } from './proof-lint';
 import { proveArchitecture } from './proof-architecture';
 import { proveLocalization } from './proof-i18n';
@@ -6,4 +7,5 @@ provePointers();
 proveLint();
 proveArchitecture();
 proveLocalization();
+proveAuthScope();
 process.stdout.write('All configured custom-gate fixtures were rejected and removed.\n');
