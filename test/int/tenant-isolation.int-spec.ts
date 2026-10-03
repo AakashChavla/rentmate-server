@@ -65,7 +65,7 @@ describe('Cross-Tenant Isolation Integration Test (*.int-spec.ts)', () => {
     );
 
     // Create User in Org A
-    userA = await userRepo.saveUser({
+    userA = await userRepo.createUser({
       organizationId: orgA.id,
       email: `usera-${Date.now()}@example.com`,
       fullName: 'User A',
@@ -139,9 +139,9 @@ describe('Cross-Tenant Isolation Integration Test (*.int-spec.ts)', () => {
       expect(result.users.some((u) => u.id === userA.id)).toBe(false);
     });
 
-    it('saveUser throws TenantScopeMissingError when saving an entity ID belonging to Org A under Org B context', async () => {
+    it('createUser throws TenantScopeMissingError when saving an entity ID', async () => {
       await expect(
-        userRepo.saveUser({
+        userRepo.createUser({
           id: userA.id,
           organizationId: orgB.id,
           fullName: 'Hacked Name',

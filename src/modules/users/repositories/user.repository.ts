@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { TenantScopedRepository } from '../../../core/database/base/tenant-scoped.repository';
+import { TenantScopeMissingError } from '../../../core/tenancy/tenant-scope.error';
 import { User } from '../entities/user.entity';
+import { UserStatus } from '../types/user-status';
 import type { UserListQuery } from '../types/user-list-query';
 import { decodeCursor, encodeCursor } from '../../../shared/cursor';
 
@@ -67,7 +69,12 @@ export class UserRepository extends TenantScopedRepository<User> {
     return { users: page, nextCursor, hasNext, limit };
   }
 
-  async saveUser(user: Partial<User> & { organizationId: string }): Promise<User> {
+  async createUser(user: Partial<User> & { organizationId: string }): Promise<User> {
+    if ((user as { id?: string }).id) {
+      throw new TenantScopeMissingError(
+        'createUser must not be used with an existing id; use targeted update methods',
+      );
+    }
     const orgId = this.getOrgId(user.organizationId);
     const normalized = {
       ...user,
@@ -75,6 +82,76 @@ export class UserRepository extends TenantScopedRepository<User> {
       ...(user.email ? { email: user.email.toLowerCase().trim() } : {}),
     };
     return this.saveScoped(orgId, normalized);
+  }
+
+  async recordLoginSuccess(organizationId: string, userId: string): Promise<void> {
+    const orgId = this.getOrgId(organizationId);
+    await this.updateScoped(
+      orgId,
+      { id: userId },
+      {
+        lastLoginAt: new Date(),
+        failedLoginCount: 0,
+        lockedUntil: null,
+      },
+    );
+  }
+
+  async recordLoginFailure(
+    organizationId: string,
+    userId: string,
+    threshold = 5,
+    lockMs = 15 * 60 * 1000,
+  ): Promise<void> {
+    const orgId = this.getOrgId(organizationId);
+    const lockUntilDate = new Date(Date.now() + lockMs);
+    await this.scopedQueryBuilder(orgId, 'user')
+      .update(User)
+      .set({
+        failedLoginCount: () =>
+          'CASE WHEN locked_until IS NOT NULL AND locked_until <= NOW() THEN 1 ELSE failed_login_count + 1 END',
+        lockedUntil: () =>
+          `CASE WHEN (CASE WHEN locked_until IS NOT NULL AND locked_until <= NOW() THEN 1 ELSE failed_login_count + 1 END) >= ${threshold} THEN '${lockUntilDate.toISOString()}'::timestamptz ELSE NULL END`,
+      })
+      .where('id = :userId', { userId })
+      .execute();
+  }
+
+  async setPasswordHash(
+    organizationId: string,
+    userId: string,
+    passwordHash: string,
+    status?: UserStatus,
+  ): Promise<void> {
+    const orgId = this.getOrgId(organizationId);
+    const partial: Record<string, unknown> = {
+      passwordHash,
+      failedLoginCount: 0,
+      lockedUntil: null,
+    };
+    if (status) {
+      partial.status = status;
+    }
+    await this.updateScoped(orgId, { id: userId }, partial);
+  }
+
+  async updateProfile(
+    organizationId: string,
+    userId: string,
+    profile: { fullName?: string; phone?: string | null },
+  ): Promise<void> {
+    const orgId = this.getOrgId(organizationId);
+    const partial: Record<string, unknown> = {};
+    if (profile.fullName !== undefined) partial.fullName = profile.fullName;
+    if (profile.phone !== undefined) partial.phone = profile.phone;
+    if (Object.keys(partial).length > 0) {
+      await this.updateScoped(orgId, { id: userId }, partial);
+    }
+  }
+
+  async setStatus(organizationId: string, userId: string, status: UserStatus): Promise<void> {
+    const orgId = this.getOrgId(organizationId);
+    await this.updateScoped(orgId, { id: userId }, { status });
   }
 
   async updateLastLogin(organizationId: string, userId: string): Promise<void> {

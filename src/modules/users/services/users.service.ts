@@ -91,20 +91,23 @@ export class UsersService implements UserDirectory {
     const updatedStatus = input.status ?? user.status;
     const isSuspended = updatedStatus === UserStatus.Suspended;
 
-    const saved = await this.transactionRunner.run(async () => {
-      const u = await this.userRepository.saveUser({
-        ...user,
-        fullName: input.fullName ?? user.fullName,
-        phone: input.phone === undefined ? user.phone : input.phone,
-        status: updatedStatus,
-        organizationId: actor.organizationId,
-      });
-
-      if (isSuspended) {
-        await this.sessionRevoker.revokeAllForUser(actor.organizationId, u.id);
+    await this.transactionRunner.run(async () => {
+      if (input.fullName !== undefined || input.phone !== undefined) {
+        await this.userRepository.updateProfile(actor.organizationId, userId, {
+          fullName: input.fullName,
+          phone: input.phone,
+        });
       }
-      return u;
+      if (input.status !== undefined) {
+        await this.userRepository.setStatus(actor.organizationId, userId, input.status);
+      }
+      if (isSuspended) {
+        await this.sessionRevoker.revokeAllForUser(actor.organizationId, userId);
+      }
     });
+
+    const saved = await this.userRepository.findByIdInOrg(actor.organizationId, userId);
+    if (!saved) throw notFound();
 
     await this.permissionChecker.invalidateUserCache(saved.id);
     const [view] = await this.withRoles(actor.organizationId, [saved]);

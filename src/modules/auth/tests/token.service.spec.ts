@@ -133,6 +133,38 @@ class MemoryTokens {
     }
   }
 
+  async rotateToken(
+    organizationId: string,
+    id: string,
+    replacementId: string,
+    now = new Date(),
+  ): Promise<number> {
+    const target = this.rows.find(
+      (r) => r.id === id && r.organizationId === organizationId && !r.revokedAt,
+    );
+    if (!target) return 0;
+    target.revokedAt = now;
+    target.replacedById = replacementId;
+    return 1;
+  }
+
+  async revokeOtherFamiliesForUser(
+    organizationId: string,
+    userId: string,
+    keepFamilyId: string,
+  ): Promise<void> {
+    for (const r of this.rows) {
+      if (
+        r.userId === userId &&
+        r.organizationId === organizationId &&
+        r.familyId !== keepFamilyId &&
+        !r.revokedAt
+      ) {
+        r.revokedAt = new Date();
+      }
+    }
+  }
+
   async updateToken(token: RefreshToken): Promise<RefreshToken> {
     const idx = this.rows.findIndex((r) => r.id === token.id);
     if (idx >= 0) {

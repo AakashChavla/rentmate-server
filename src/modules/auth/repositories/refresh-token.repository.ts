@@ -25,12 +25,61 @@ export class RefreshTokenRepository extends TenantScopedRepository<RefreshToken>
 
   async revokeFamily(organizationId: string, familyId: string): Promise<void> {
     const orgId = this.getOrgId(organizationId);
-    await this.updateScoped(orgId, { familyId, revokedAt: IsNull() }, { revokedAt: new Date() });
+    await this.unscopedForAuth
+      .createQueryBuilder()
+      .update(RefreshToken)
+      .set({ revokedAt: new Date() })
+      .where('organization_id = :orgId AND family_id = :familyId AND revoked_at IS NULL', {
+        orgId,
+        familyId,
+      })
+      .execute();
   }
 
   async revokeAllForUser(organizationId: string, userId: string): Promise<void> {
     const orgId = this.getOrgId(organizationId);
-    await this.updateScoped(orgId, { userId, revokedAt: IsNull() }, { revokedAt: new Date() });
+    await this.unscopedForAuth
+      .createQueryBuilder()
+      .update(RefreshToken)
+      .set({ revokedAt: new Date() })
+      .where('organization_id = :orgId AND user_id = :userId AND revoked_at IS NULL', {
+        orgId,
+        userId,
+      })
+      .execute();
+  }
+
+  async rotateToken(
+    organizationId: string,
+    id: string,
+    replacementId: string,
+    now = new Date(),
+  ): Promise<number> {
+    const orgId = this.getOrgId(organizationId);
+    const res = await this.unscopedForAuth
+      .createQueryBuilder()
+      .update(RefreshToken)
+      .set({ revokedAt: now, replacedById: replacementId })
+      .where('id = :id AND organization_id = :orgId AND revoked_at IS NULL', { id, orgId })
+      .execute();
+    return res.affected ?? 0;
+  }
+
+  async revokeOtherFamiliesForUser(
+    organizationId: string,
+    userId: string,
+    keepFamilyId: string,
+  ): Promise<void> {
+    const orgId = this.getOrgId(organizationId);
+    await this.unscopedForAuth
+      .createQueryBuilder()
+      .update(RefreshToken)
+      .set({ revokedAt: new Date() })
+      .where(
+        'organization_id = :orgId AND user_id = :userId AND family_id != :keepFamilyId AND revoked_at IS NULL',
+        { orgId, userId, keepFamilyId },
+      )
+      .execute();
   }
 
   async updateToken(

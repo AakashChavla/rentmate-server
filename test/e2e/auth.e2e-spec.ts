@@ -115,13 +115,25 @@ describe('Auth and RBAC (e2e)', () => {
       .post('/api/v1/auth/refresh')
       .set('Cookie', original);
     expect(reused.status).toBe(401);
-    expect(reused.body.error.code).toBe(ErrorCode.SESSION_REVOKED);
+    expect(reused.body.error.code).toBe(ErrorCode.TOKEN_ROTATED);
 
-    const followUp = await request(app.getHttpServer())
+    const validFollowUp = await request(app.getHttpServer())
       .post('/api/v1/auth/refresh')
       .set('Cookie', rotated);
-    expect(followUp.status).toBe(401);
-    expect(followUp.body.error.code).toBe(ErrorCode.SESSION_REVOKED);
+    expect(validFollowUp.status).toBe(200);
+    const rotated2 = cookiePair(setCookie(validFollowUp), CookieName.Refresh);
+
+    const reuseOldAncestor = await request(app.getHttpServer())
+      .post('/api/v1/auth/refresh')
+      .set('Cookie', original);
+    expect(reuseOldAncestor.status).toBe(401);
+    expect(reuseOldAncestor.body.error.code).toBe(ErrorCode.SESSION_REVOKED);
+
+    const followUpAfterRevocation = await request(app.getHttpServer())
+      .post('/api/v1/auth/refresh')
+      .set('Cookie', rotated2);
+    expect(followUpAfterRevocation.status).toBe(401);
+    expect(followUpAfterRevocation.body.error.code).toBe(ErrorCode.SESSION_REVOKED);
   });
 
   it('clears cookies on logout', async () => {

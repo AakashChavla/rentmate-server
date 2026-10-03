@@ -15,9 +15,6 @@ import { TokenService } from './token.service';
 import { TransactionRunner } from '../../../core/database/transaction-runner';
 import type { ClientMeta, IssuedSession } from '../types/token.types';
 
-const LOGIN_LOCK_MS = 15 * 60 * 1000;
-const MAX_LOGIN_FAILURES = 5;
-
 export type MeResponse = Omit<AuthProfile, 'grants'>;
 
 export interface AuthenticatedSession {
@@ -46,7 +43,7 @@ export class AuthService {
     const passwordOk = await this.passwords.verify(user?.passwordHash ?? null, password);
     if (!user || !passwordOk) {
       if (user) {
-        await this.recordFailure(user, now);
+        await this.recordFailure(user);
       }
 
       throw invalidCredentials();
@@ -56,13 +53,7 @@ export class AuthService {
       throw accountSuspended();
     }
 
-    await this.userRepository.saveUser({
-      ...user,
-      failedLoginCount: 0,
-      lockedUntil: null,
-      lastLoginAt: now,
-      organizationId: user.organizationId,
-    });
+    await this.userRepository.recordLoginSuccess(user.organizationId, user.id);
     return this.startSession(user.id, user.organizationId, meta);
   }
 
@@ -109,26 +100,23 @@ export class AuthService {
       throw accountSuspended();
     }
 
-    await this.userRepository.saveUser({
-      ...user,
-      lastLoginAt: new Date(),
-      organizationId: user.organizationId,
-    });
+    await this.userRepository.recordLoginSuccess(user.organizationId, user.id);
     return this.startSession(user.id, user.organizationId, meta);
   }
 
   async resetPassword(email: string, code: string, newPassword: string): Promise<{ reset: true }> {
     const user = await this.otp.verify(email, code, OtpPurpose.PasswordReset);
 
+    const newPasswordHash = await this.passwords.hash(newPassword);
+    const targetStatus = user.status === UserStatus.Invited ? UserStatus.Active : user.status;
+
     await this.transactionRunner.run(async () => {
-      await this.userRepository.saveUser({
-        ...user,
-        passwordHash: await this.passwords.hash(newPassword),
-        status: user.status === UserStatus.Invited ? UserStatus.Active : user.status,
-        failedLoginCount: 0,
-        lockedUntil: null,
-        organizationId: user.organizationId,
-      });
+      await this.userRepository.setPasswordHash(
+        user.organizationId,
+        user.id,
+        newPasswordHash,
+        targetStatus,
+      );
       await this.tokens.revokeAllForUser(user.organizationId, user.id);
     });
 
@@ -153,12 +141,11 @@ export class AuthService {
       throw invalidCredentials();
     }
 
+    const newPasswordHash = await this.passwords.hash(newPassword);
+
     await this.transactionRunner.run(async () => {
-      await this.userRepository.saveUser({
-        ...user,
-        passwordHash: await this.passwords.hash(newPassword),
-        organizationId,
-      });
+      await this.userRepository.setPasswordHash(organizationId, userId, newPasswordHash);
+      await this.tokens.revokeOtherFamiliesForUser(organizationId, userId, sessionId);
     });
 
     await this.permissions.invalidate(userId);
@@ -169,17 +156,8 @@ export class AuthService {
     return toMe(await this.requireProfile(userId, organizationId));
   }
 
-  private async recordFailure(user: User, now: Date): Promise<void> {
-    const lockExpired = Boolean(user.lockedUntil && user.lockedUntil.getTime() <= now.getTime());
-    const failedLoginCount = (lockExpired ? 0 : user.failedLoginCount) + 1;
-    const lockedUntil =
-      failedLoginCount >= MAX_LOGIN_FAILURES ? new Date(now.getTime() + LOGIN_LOCK_MS) : null;
-    await this.userRepository.saveUser({
-      ...user,
-      failedLoginCount,
-      lockedUntil,
-      organizationId: user.organizationId,
-    });
+  private async recordFailure(user: User): Promise<void> {
+    await this.userRepository.recordLoginFailure(user.organizationId, user.id);
   }
 
   private async startSession(

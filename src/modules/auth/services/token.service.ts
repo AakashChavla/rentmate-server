@@ -67,58 +67,74 @@ export class TokenService implements SessionRevoker {
 
   async rotate(refreshToken: string, meta: ClientMeta, now = new Date()): Promise<IssuedSession> {
     const claims = await this.readRefreshClaims(refreshToken);
-    const current = await this.refreshTokenRepository.findByJti(claims.jti);
-
-    if (!current || !hashesEqual(current.tokenHash, sha256(refreshToken))) {
-      throw unauthorized();
-    }
-
-    if (current.revokedAt) {
-      await this.revokeFamily(claims.org, current.familyId);
-      throw sessionRevoked();
-    }
-
-    if (current.expiresAt.getTime() <= now.getTime()) {
-      throw tokenExpired();
-    }
-
     const replacementId = randomUUID();
 
-    const result = await this.transactionRunner.run(async () => {
-      current.revokedAt = now;
-      current.replacedById = replacementId;
-      await this.refreshTokenRepository.updateToken(current);
+    let shouldRevokeFamily = false;
 
-      const nextAccess = await this.signAccess({
-        sub: claims.sub,
-        org: claims.org,
-        fid: claims.fid,
+    try {
+      const result = await this.transactionRunner.run(async () => {
+        const affected = await this.refreshTokenRepository.rotateToken(
+          claims.org,
+          claims.jti,
+          replacementId,
+          now,
+        );
+
+        if (affected === 0) {
+          const current = await this.refreshTokenRepository.findByJti(claims.jti);
+          if (
+            current &&
+            current.familyId === claims.fid &&
+            current.revokedAt &&
+            current.replacedById &&
+            now.getTime() - current.revokedAt.getTime() <= 10000
+          ) {
+            const successor = await this.refreshTokenRepository.findByJti(current.replacedById);
+            if (successor && successor.revokedAt === null) {
+              throw tokenRotated();
+            }
+          }
+
+          shouldRevokeFamily = true;
+          throw sessionRevoked();
+        }
+
+        const nextAccess = await this.signAccess({
+          sub: claims.sub,
+          org: claims.org,
+          fid: claims.fid,
+        });
+
+        const nextRefresh = await this.signRefresh({
+          sub: claims.sub,
+          org: claims.org,
+          fid: claims.fid,
+          jti: replacementId,
+        });
+
+        await this.refreshTokenRepository.saveToken({
+          id: replacementId,
+          userId: claims.sub,
+          organizationId: claims.org,
+          familyId: claims.fid,
+          tokenHash: sha256(nextRefresh),
+          expiresAt: new Date(now.getTime() + durationToMs(this.config.jwtRefreshTtl)),
+          revokedAt: undefined,
+          replacedById: undefined,
+          userAgent: meta.userAgent,
+          ip: meta.ip,
+        });
+
+        return { accessToken: nextAccess, refreshToken: nextRefresh, familyId: claims.fid };
       });
 
-      const nextRefresh = await this.signRefresh({
-        sub: claims.sub,
-        org: claims.org,
-        fid: claims.fid,
-        jti: replacementId,
-      });
-
-      await this.refreshTokenRepository.saveToken({
-        id: replacementId,
-        userId: claims.sub,
-        organizationId: claims.org,
-        familyId: claims.fid,
-        tokenHash: sha256(nextRefresh),
-        expiresAt: new Date(now.getTime() + durationToMs(this.config.jwtRefreshTtl)),
-        revokedAt: undefined,
-        replacedById: undefined,
-        userAgent: meta.userAgent,
-        ip: meta.ip,
-      });
-
-      return { accessToken: nextAccess, refreshToken: nextRefresh, familyId: claims.fid };
-    });
-
-    return result;
+      return result;
+    } catch (error) {
+      if (shouldRevokeFamily) {
+        await this.revokeFamily(claims.org, claims.fid);
+      }
+      throw error;
+    }
   }
 
   async verifyAccess(token: string): Promise<AccessTokenClaims> {
@@ -157,6 +173,18 @@ export class TokenService implements SessionRevoker {
 
   async revokeAllForUser(organizationId: string, userId: string): Promise<void> {
     await this.refreshTokenRepository.revokeAllForUser(organizationId, userId);
+  }
+
+  async revokeOtherFamiliesForUser(
+    organizationId: string,
+    userId: string,
+    keepFamilyId: string,
+  ): Promise<void> {
+    await this.refreshTokenRepository.revokeOtherFamiliesForUser(
+      organizationId,
+      userId,
+      keepFamilyId,
+    );
   }
 
   private async readRefreshClaims(token: string): Promise<RefreshTokenClaims> {
@@ -209,6 +237,14 @@ function tokenExpired(): AppException {
 
 function sessionRevoked(): AppException {
   return new AppException(ErrorCode.SESSION_REVOKED, 'Session revoked', HttpStatus.UNAUTHORIZED);
+}
+
+function tokenRotated(): AppException {
+  return new AppException(
+    ErrorCode.TOKEN_ROTATED,
+    'Token already rotated',
+    HttpStatus.UNAUTHORIZED,
+  );
 }
 
 function isExpiredJwt(error: unknown): boolean {
