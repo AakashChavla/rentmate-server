@@ -7,13 +7,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
       - run: corepack enable
       - run: yarn install --frozen-lockfile
-      - run: yarn check
+      - run: yarn verify:quick
       - run: yarn rules:proof
-      - run: yarn build
-      - run: corepack pnpm@10.11.0 import
-      - run: corepack pnpm@10.11.0 audit
+      - run: yarn i18n:types
+      - run: git diff --exit-code
+      - run: yarn openapi:export
+      - run: git diff --exit-code -- docs/openapi.json
+      - run: yarn audit --level high
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  codeql:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+      - uses: github/codeql-action/analyze@v3

@@ -1,2 +1,3 @@
-# src/integrations
-Reserved for the corresponding later phase. Follow AGENTS.md and ADR-0001; no business implementation exists yet.
+# Integration ports
+
+Adapters belong under <capability>/adapters/<vendor> and implement abstract ports bound with useClass. Add real providers in their vertical feature phases; the Phase 0 Clock example is platform infrastructure.

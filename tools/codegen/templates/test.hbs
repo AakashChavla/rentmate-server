@@ -1,0 +1,12 @@
+import { Test } from '@nestjs/testing';
+import { {{pascalCase name}}Module } from '../{{kebabCase name}}.module';
+import { {{pascalCase name}}{{role}} } from '../contracts/{{kebabCase name}}.contract';
+import { Fake{{pascalCase name}}{{role}} } from './fake-{{kebabCase name}}';
+describe('{{pascalCase name}} port binding', () => {
+  it('supports swapping the implementation without changing consumers', async () => {
+    const module = await Test.createTestingModule({ imports: [{{pascalCase name}}Module] })
+      .overrideProvider({{pascalCase name}}{{role}}).useClass(Fake{{pascalCase name}}{{role}}).compile();
+    expect(module.get({{pascalCase name}}{{role}}).ready()).toBe(false);
+    await module.close();
+  });
+});

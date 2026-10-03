@@ -1,12 +1,12 @@
 import { NestFactory } from '@nestjs/core';
+import { Logger } from 'nestjs-pino';
+import helmet from 'helmet';
+import type { INestApplication } from '@nestjs/common';
 import { AppModule } from './app.module';
-import { parseEnvironment } from './core/config/environment';
-
-export async function bootstrap() {
-  const config = parseEnvironment(process.env);
-  const app = await NestFactory.create(AppModule, { logger: false });
-  app.setGlobalPrefix('api/v1');
-  app.enableCors({ origin: config.CLIENT_ORIGIN, credentials: true });
+export async function createApplication(): Promise<INestApplication> {
+  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  app.useLogger(app.get(Logger));
+  app.use(helmet());
   app.enableShutdownHooks();
-  await app.listen(config.PORT, '0.0.0.0');
+  return app;
 }

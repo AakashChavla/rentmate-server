@@ -1,47 +1,66 @@
-// Intentionally JavaScript-compatible TypeScript: M0 requires no installed dependencies.
-const fs = require('node:fs');
-const path = require('node:path');
-const root = path.resolve(__dirname, '..');
-const required = ['AGENTS.md', 'CLAUDE.md', 'GEMINI.md', '.agent/rules/core.md',
-  '.cursor/rules/core.mdc', '.github/copilot-instructions.md',
-  '.github/instructions/source.instructions.md', '.github/pull_request_template.md'];
-const docs = Array.from({ length: 11 }, (_, index) => String(index + 1).padStart(2, '0'));
-const failures = [];
-const guide = path.join(root, 'docs/ai');
-const existing = fs.existsSync(guide) ? fs.readdirSync(guide) : [];
-for (const prefix of docs) {
-  if (!existing.some((name) => name.startsWith(`${prefix}-`) && name.endsWith('.md'))) {
-    failures.push(`Missing documentation section ${prefix}`);
+import { existsSync } from 'node:fs';
+import { basename, join, relative } from 'node:path';
+import { listFiles, readText } from './file-utils';
+const MAX_RULE_CHARACTERS = 10_000;
+const ROOT = process.cwd();
+const POINTERS = [
+  'AGENTS.md',
+  'CLAUDE.md',
+  'GEMINI.md',
+  '.agent/rules/core.md',
+  '.cursor/rules/core.mdc',
+  '.cursor/rules/source.mdc',
+  '.github/copilot-instructions.md',
+  '.github/instructions/source.instructions.md',
+  '.github/pull_request_template.md',
+];
+const SECTIONS = [
+  '01-architecture',
+  '02-code-style-and-naming',
+  '03-data-access-and-tenancy',
+  '04-integrations',
+  '05-api-conventions',
+  '06-testing',
+  '07-security-and-logging',
+  '08-git-and-workflow',
+  '09-review-checklist',
+  '10-roadmap-and-status',
+  '11-reusable-catalog',
+  '12-localization',
+];
+const DIRECTORIES = ['.agent/rules', '.cursor/rules', '.github/instructions'];
+function inspectPointer(target: string): string[] {
+  if (!existsSync(target)) return [`Missing pointer: ${relative(ROOT, target)}`];
+  const content = readText(target);
+  const errors = content.length > MAX_RULE_CHARACTERS ? [`Oversized rule: ${target}`] : [];
+  for (const reference of content.matchAll(/(?:docs\/ai\/[\w-]+\.md|AGENTS\.md)/g)) {
+    if (!existsSync(join(ROOT, reference[0]))) errors.push(`Broken reference: ${reference[0]}`);
   }
-}
-for (const relative of required) {
-  const target = path.join(root, relative);
-  if (!fs.existsSync(target)) { failures.push(`Missing pointer: ${relative}`); continue; }
-  const content = fs.readFileSync(target, 'utf8');
-  if (content.length > 10000) failures.push(`Rule exceeds 10000 characters: ${relative}`);
-  if (relative === 'CLAUDE.md' && content.split('\n')[0] !== '@AGENTS.md') {
-    failures.push('CLAUDE.md must begin with @AGENTS.md');
+  if (basename(target) === 'CLAUDE.md' && content.split(/\r?\n/)[0] !== '@AGENTS.md') {
+    errors.push('CLAUDE.md must begin with @AGENTS.md');
   }
-  for (const match of content.matchAll(/(?:docs\/ai\/[\w-]+\.md|AGENTS\.md)/g)) {
-    if (!fs.existsSync(path.join(root, match[0]))) failures.push(`Broken reference: ${match[0]}`);
+  return errors;
+}
+function validateRules(): string[] {
+  const files = new Set(POINTERS.map((pointer) => join(ROOT, pointer)));
+  for (const directory of DIRECTORIES) {
+    if (existsSync(directory))
+      listFiles(directory).forEach((target) => files.add(join(ROOT, target)));
   }
-}
-function inspect(directory) {
-  if (!fs.existsSync(directory)) return;
-  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
-    const target = path.join(directory, entry.name);
-    if (entry.isDirectory()) { inspect(target); continue; }
-    const content = fs.readFileSync(target, 'utf8');
-    if (content.length > 10000) failures.push(`Oversized rule: ${path.relative(root, target)}`);
-    for (const match of content.matchAll(/docs\/ai\/[\w-]+\.md/g)) {
-      if (!fs.existsSync(path.join(root, match[0]))) failures.push(`Broken reference: ${match[0]}`);
-    }
+  const errors = [...files].flatMap(inspectPointer);
+  const sections = ROOT.endsWith('rentmate-client')
+    ? [...SECTIONS, '13-design-system-and-motion']
+    : SECTIONS;
+  for (const section of sections) {
+    if (!existsSync(join(ROOT, 'docs/ai', `${section}.md`)))
+      errors.push(`Missing section: ${section}`);
   }
+  return errors;
 }
-for (const directory of ['.agent/rules', '.cursor/rules', '.github/instructions']) {
-  inspect(path.join(root, directory));
-}
-if (failures.length) {
-  process.stderr.write(`${failures.join('\n')}\n`);
+const errors = validateRules();
+if (errors.length) {
+  process.stderr.write(`${errors.join('\n')}\n`);
   process.exitCode = 1;
-} else { process.stdout.write('Rules and documentation checks passed.\n'); }
+} else {
+  process.stdout.write('Rules and documentation checks passed.\n');
+}

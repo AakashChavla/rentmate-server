@@ -1,5 +1,7 @@
-## Change
-Describe the resulting behavior.
+## Behavior
+
+Describe the change in both repositories.
 
 ## Validation
-List observed checks and unverified work. Follow docs/ai/09-review-checklist.md.
+
+List observed commands, proofs and unverified infrastructure. Use docs/ai/09-review-checklist.md.

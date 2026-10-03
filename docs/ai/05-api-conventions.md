@@ -1,1 +1,6 @@
-Use /api/v1, cookie authentication and the shared success/error envelope. Use created_at/id keyset pagination. Reject malformed cursors with 400. Deny routes by default. Export OpenAPI on the server and generate client types from it; never invent missing endpoints.
+# API and two-repository contract
+
+Server docs/openapi.json is authoritative. Every phase runs server work -> yarn openapi:export -> client yarn api:types -> client work. The client must not invent endpoints.
+Success: {success,data,meta:{requestId,timestamp,page?}}. Error: {success:false,error:{code,message,details},meta:{requestId}}. Keyset page: {limit,hasNext,nextCursor}; use created_at/id and MAX_PAGE_SIZE.
+Stable error codes, locales (en/hi), cookie names (rm_access, rm_refresh, rm_session, NEXT_LOCALE), envelope and pagination change in both repos together. Tokens remain httpOnly. Health routes are outside the versioned API/envelope.
+Phase 0 offers GET /health/live only and exports its actual OpenAPI document. Database readiness, auth and domain endpoints arrive in subsequent phases.

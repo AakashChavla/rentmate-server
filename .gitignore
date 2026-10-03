@@ -2,9 +2,11 @@ node_modules/
 dist/
 .next/
 coverage/
-.cache/
-.env
-.env.*
+.env*
 !.env.example
 *.tsbuildinfo
-next-env.d.ts
+.husky/_/
+docs/proof-fixtures/
+
+.cache/
+*.log

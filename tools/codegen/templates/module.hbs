@@ -1,0 +1,5 @@
+import { Module } from '@nestjs/common';
+import { {{pascalCase name}}{{role}} } from './contracts/{{kebabCase name}}.contract';
+import { {{prefix}}{{pascalCase name}}{{role}} } from './{{folder}}/{{kebabCase prefix}}-{{kebabCase name}}.{{fileRole}}';
+@Module({ providers: [{ provide: {{pascalCase name}}{{role}}, useClass: {{prefix}}{{pascalCase name}}{{role}} }], exports: [{{pascalCase name}}{{role}}] })
+export class {{pascalCase name}}Module {}

@@ -1,0 +1,6 @@
+import { Injectable } from '@nestjs/common';
+import { {{pascalCase name}}{{role}} } from '{{contractRelative}}/{{kebabCase name}}.contract';
+@Injectable()
+export class {{prefix}}{{pascalCase name}}{{role}} extends {{pascalCase name}}{{role}} {
+  public override ready(): boolean { return true; }
+}

@@ -1,5 +1,5 @@
 ---
-description: Canonical engineering rules
+description: Engineering charter
 alwaysApply: true
 ---
 Follow AGENTS.md and docs/ai/01-architecture.md.
