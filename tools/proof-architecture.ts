@@ -6,7 +6,7 @@ export function proveArchitecture(): void {
       requireRejection(
         test.name,
         () =>
-          runNode('node_modules/dependency-cruiser/bin/dependency-cruise.mjs', [
+          runNode('node_modules/dependency-cruiser/bin/dependency-cruiser.mjs', [
             'src',
             '--config',
             '.dependency-cruiser.cjs',

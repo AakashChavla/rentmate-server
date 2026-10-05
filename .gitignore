@@ -10,3 +10,5 @@ docs/proof-fixtures/
 
 .cache/
 *.log
+
+.yarn/

@@ -1,3 +1,4 @@
+import { jest } from '@jest/globals';
 import type { Request, Response, NextFunction } from 'express';
 import { atomicThrottle, requestIdentity, originCheck } from './platform-middleware';
 import { FakeClock } from '../time/tests/fake-clock';

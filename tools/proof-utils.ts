@@ -1,7 +1,23 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+  renameSync,
+  unlinkSync,
+} from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import assert from 'node:assert/strict';
+function writeFixture(target: string, content: string | Buffer): void {
+  const temporary = `${target}.proof-${String(process.pid)}`;
+  try {
+    writeFileSync(temporary, content);
+    renameSync(temporary, target);
+  } finally {
+    if (existsSync(temporary)) unlinkSync(temporary);
+  }
+}
 export function withFixtures<T>(files: Record<string, string | undefined>, action: () => T): T {
   const originals = new Map<string, Buffer | undefined>();
   try {
@@ -11,7 +27,7 @@ export function withFixtures<T>(files: Record<string, string | undefined>, actio
         if (existsSync(target)) unlinkSync(target);
       } else {
         mkdirSync(dirname(target), { recursive: true });
-        writeFileSync(target, content);
+        writeFixture(target, content);
       }
     }
     return action();
@@ -20,7 +36,7 @@ export function withFixtures<T>(files: Record<string, string | undefined>, actio
       if (content === undefined) {
         if (existsSync(target)) unlinkSync(target);
       } else {
-        writeFileSync(target, content);
+        writeFixture(target, content);
       }
     }
   }

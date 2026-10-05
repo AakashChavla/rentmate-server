@@ -11,3 +11,5 @@ src/lib/api/schema.d.ts
 .cache
 *.log
 tools/codegen/templates
+
+.yarn

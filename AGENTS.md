@@ -43,7 +43,7 @@ Pointers stay short and link to docs/ai. CLAUDE.md starts @AGENTS.md. rules:chec
 
 ## Commands and done
 
-Use Node 20.20.2 and Corepack Yarn 1.22.22. Run yarn install, yarn dev, yarn verify:quick, yarn verify, yarn rules:proof, yarn gen and yarn format. Both repos must compile and pass quick verification; report unverified external services exactly.
+Use Node 26.10.0 and Corepack Yarn 4.18.1. Before each new phase, verify current non-prerelease runtime/package releases, upgrade compatible versions, and document compiler peer exceptions. See docs/ai/16-stable-upgrade-report.md. Run yarn install, yarn dev, yarn verify:quick, yarn verify, yarn rules:proof, yarn gen and yarn format. Both repos must compile and pass quick verification; report unverified external services exactly.
 
 - [01-architecture](docs/ai/01-architecture.md)
 - [02-code-style-and-naming](docs/ai/02-code-style-and-naming.md)

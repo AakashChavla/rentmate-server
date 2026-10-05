@@ -1,5 +1,9 @@
 module.exports = {
-  preset: 'ts-jest',
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.jest.json' }],
+    '^.+\\.m?js$': ['@swc/jest', { module: { type: 'commonjs' }, jsc: { target: 'es2022' } }],
+  },
+  transformIgnorePatterns: [],
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
   setupFiles: ['<rootDir>/tools/jest-env.cjs'],

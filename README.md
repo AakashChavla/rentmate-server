@@ -2,13 +2,14 @@
 
 Phase 1 supplies the NestJS platform: PostgreSQL/TypeORM migrations, Redis, BullMQ ports, tenant-scoped repository primitives, localized envelopes, Pino, security middleware, health probes and a separate worker. Business modules are explicit placeholders; authentication arrives in Phase 2.
 
-Use Node 20.20.2 and Corepack Yarn 1.22.22. Read [AGENTS.md](AGENTS.md), [status](docs/ai/10-roadmap-and-status.md) and [Phase 1 report](docs/ai/15-phase1-report.md).
+Use Node 26.10.0 and Corepack Yarn 4.18.1. Read [AGENTS.md](AGENTS.md), [status](docs/ai/10-roadmap-and-status.md) and [Phase 1 report](docs/ai/15-phase1-report.md).
 
 Copy .env.example to an ignored .env and supply your own database credential. Compose loads interpolation values from .env; direct Node execution needs exported environment variables or Node --env-file. Never commit .env.
 
 ```powershell
+npm install --global corepack@0.36.0
 corepack enable
-yarn install --frozen-lockfile
+yarn install --immutable
 docker compose up -d --build
 yarn verify
 yarn rules:proof
@@ -22,3 +23,5 @@ Migrations run once before API and worker startup. For a scaling check use docke
 Direct development: yarn migration:run, yarn dev and yarn worker:dev with validated environment variables. yarn build/yarn start run compiled API code; Dockerfile prod is non-root and copies dist into the runtime image. Shutdown closes workers, publishers, Redis and database connections.
 
 Export OpenAPI before client yarn api:types. Plop module/integration/processor generators and all strict gates remain available. Integration tests require a dedicated fixture database and create/drop only their own sample tables. Current audits block release; see the report for verified results and external limitations.
+
+Current dependency policy and compiler exceptions: [stable upgrade report](docs/ai/16-stable-upgrade-report.md). Refresh non-prerelease registry versions and rerun verification before each new phase. Keep older PostgreSQL volumes intact; a major upgrade needs a separate data migration.

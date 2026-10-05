@@ -1,8 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "module": "CommonJS",
-    "moduleResolution": "Node",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
@@ -13,7 +13,9 @@
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "noEmit": true
+    "noEmit": true,
+    "ignoreDeprecations": "6.0",
+    "types": ["node", "jest"]
   },
   "include": ["src/**/*.ts", "tools/**/*.ts"],
   "exclude": ["node_modules", "dist"]
