@@ -1,3 +1,5 @@
 # users
 
-Phase 1 placeholder. Implement this capability in its assigned vertical slice; expose index.ts contracts, inject abstract ports, and preserve tenant-scoped data access. No runtime provider or endpoint is registered yet.
+Phase 2 provides profile updates, tenant-scoped user reads, cursor pagination, status changes and role management. Services enforce owner and permission checks; repositories use targeted organization-scoped updates. UserDirectory exposes identity reads through contracts, with SessionRevoker and PermissionChecker injected through root wiring.
+
+See [Phase 2 report](../../../docs/ai/17-phase2-report.md) for endpoints, isolation tests and limitations.
