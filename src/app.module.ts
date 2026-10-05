@@ -14,10 +14,14 @@ import { HealthService } from './core/health/health.contract';
 import { DefaultHealthService } from './core/health/default-health.service';
 import { Readiness } from './core/health/readiness.contract';
 import { DefaultReadiness } from './core/health/default-readiness.service';
+import { IdentityModule } from './identity.module';
+import { DiscoveryModule } from '@nestjs/core';
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
     CoreModule,
+    IdentityModule,
+    DiscoveryModule,
     I18nModule.forRoot({
       fallbackLanguage: DEFAULT_LOCALE,
       loaderOptions: { path: join(__dirname, 'i18n'), watch: false },

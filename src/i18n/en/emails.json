@@ -1,0 +1,8 @@
+{
+  "auth": {
+    "subject": "Your RentMate account",
+    "otp": "Your RentMate verification code is {code}. It expires in 5 minutes. Never share this code.",
+    "accountExists": "You already have a RentMate account. Sign in or request a password reset if needed.",
+    "passwordReset": "Your RentMate password reset code is {code}. It expires in 5 minutes. Ignore this email if you did not request a reset."
+  }
+}

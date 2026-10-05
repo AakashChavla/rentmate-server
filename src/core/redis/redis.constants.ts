@@ -1,4 +1,6 @@
 export const REDIS = {
+  SET_IF_CURRENT:
+    "if (redis.call('GET',KEYS[2]) or '0') ~= ARGV[3] then return 0 end; redis.call('SET',KEYS[1],ARGV[1],'PX',ARGV[2]); return 1;",
   PONG: 'PONG',
   PX: 'PX',
   WAIT: 'wait',

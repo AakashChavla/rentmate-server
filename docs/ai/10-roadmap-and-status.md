@@ -1,5 +1,9 @@
 # Roadmap and status
 
+## Phase 2 - implementation and verification
+
+Authentication, self-service registration, RBAC, encrypted queued emails and the bilingual client flows are implemented. See [Phase 2 report](17-phase2-report.md) for the contract, operational setup and current verification evidence. Historical sections below retain their original results; future domain pages remain placeholders.
+
 ## Stable upgrade - current (2026-10-05)
 
 Latest user authorization replaces the old Node 20/PostgreSQL 16/Redis 7/Next 14/Yarn 1 pins. Current baseline: Node 26.10.0, PostgreSQL 18.6, Redis 8.10.2, Nest 12.1.2, TypeORM 1.1.1, Next 16.3.8, React 19.3.0, Tailwind 4.3.3 and Yarn 4.18.1. All direct packages use exact non-prerelease versions; compiler compatibility exceptions are documented. Both verification suites pass; audits still block release on transitive tooling findings. See [stable upgrade report](16-stable-upgrade-report.md). Earlier sections below are historical results, not the current pins or audit counts.

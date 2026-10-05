@@ -1,7 +1,11 @@
 # Security and logging
 
-Validate inputs using DTOs/Zod; whitelist and reject unknown input. Secrets are never read, printed, committed or logged. Startup rejects short/placeholder secrets when secrets are introduced. Argon2id and signed, issuer/audience-pinned JWTs are the auth requirements for the next phase.
-Only verified JWTs establish organization scope. Auth cookies are httpOnly, SameSite and Secure in production; unsafe requests verify Origin. Never put tokens in JavaScript or localStorage. Rate-limit all public business endpoints when authentication is added.
-Use Pino with request IDs, redact authorization/cookie/set-cookie/password/token/code fields and mask PII. Never leak internals in 5xx. The client sets nonce-based CSP and forbids dangerouslySetInnerHTML.
-CI runs dependency audit, Gitleaks and CodeQL; Dependabot maintains dependency alerts. Run outbound URLs through SSRF checks, validate upload magic bytes and sizes, use random private keys and signed URLs when those features are built.
-Security event catalog planned: auth.login.success/failure/locked, auth.refresh.reuse_detected, auth.session.revoked, auth.password.changed/reset, auth.otp.sent/failed/locked, user.suspended/role_assigned/role_removed. No event implementation is claimed in Phase 0.
+DTO/Zod validation rejects unknown fields. Argon2id, HS256 pinned issuer/audiences, independent secrets of at least 32 characters, httpOnly cookies and Origin checks are implemented. JWT user/org claims establish tenant identity. Redis enforces lockouts, OTP attempt budgets, revocation markers and cached permission contexts. No tokens enter response bodies, client storage or logs.
+
+SecurityEventLogger emits a fixed catalog event field, user/org/request IDs where available and masked email addresses. Pino redacts authorization, cookie, set-cookie, password, token and code fields. Internal failures map to localized error codes.
+
+Implemented event catalog: auth.login.success, auth.login.failure, auth.login.locked, auth.refresh.reuse_detected, auth.session.revoked, auth.password.changed, auth.password.reset, auth.otp.sent, auth.otp.failed, auth.otp.locked, auth.register.created, auth.register.verified, user.suspended, user.role_assigned and user.role_removed. Event names live in shared/identity.constants.ts.
+
+Email jobs contain AES-GCM ciphertext with a five-minute expiry. ExternalCallPolicy applies a deadline and typed infrastructure failures; SMTP IO also has connection/socket timeouts. BullMQ supplies bounded retries and retention. SMTP host is a validated administrator-controlled configuration value; recipient input cannot choose transport URLs or hosts. User-controlled outbound URLs/uploads require separate SSRF and content validation when introduced.
+
+CI configures dependency audit, Gitleaks and CodeQL; remote runs remain unverified. Upstream audit findings still block release. Review [Phase 2 report](17-phase2-report.md) and [refresh ADR](../adr/0007-atomic-refresh-rotation.md) for limitations, production setup and transaction/Redis boundaries.

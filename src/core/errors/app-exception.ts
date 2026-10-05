@@ -1,6 +1,18 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { ErrorCode } from './error-code.constants';
 const STATUS_BY_CODE: Partial<Record<ErrorCode, number>> = {
+  [ErrorCode.INVALID_CREDENTIALS]: HttpStatus.UNAUTHORIZED,
+  [ErrorCode.SESSION_REVOKED]: HttpStatus.UNAUTHORIZED,
+  [ErrorCode.TOKEN_EXPIRED]: HttpStatus.UNAUTHORIZED,
+  [ErrorCode.TOKEN_ROTATED]: HttpStatus.UNAUTHORIZED,
+  [ErrorCode.ACCOUNT_SUSPENDED]: HttpStatus.FORBIDDEN,
+  [ErrorCode.OTP_INVALID]: HttpStatus.BAD_REQUEST,
+  [ErrorCode.OTP_EXPIRED]: HttpStatus.BAD_REQUEST,
+  [ErrorCode.OTP_LOCKED]: HttpStatus.TOO_MANY_REQUESTS,
+  [ErrorCode.TOO_MANY_ATTEMPTS]: HttpStatus.TOO_MANY_REQUESTS,
+  [ErrorCode.WEAK_PASSWORD]: HttpStatus.UNPROCESSABLE_ENTITY,
+  [ErrorCode.LAST_OWNER]: HttpStatus.CONFLICT,
+  [ErrorCode.NOT_SUPPORTED_YET]: HttpStatus.UNPROCESSABLE_ENTITY,
   [ErrorCode.VALIDATION_ERROR]: HttpStatus.BAD_REQUEST,
   [ErrorCode.INVALID_CURSOR]: HttpStatus.BAD_REQUEST,
   [ErrorCode.UNAUTHORIZED]: HttpStatus.UNAUTHORIZED,

@@ -30,6 +30,14 @@ jobs:
           node-version-file: .nvmrc
       - run: npm install --global corepack@0.36.0 && corepack enable
       - run: yarn install --immutable
+      - name: Generate ephemeral authentication fixture secrets
+        run: |
+          for key in JWT_ACCESS_SECRET JWT_REFRESH_SECRET OTP_HMAC_SECRET; do
+            value=$(openssl rand -hex 32)
+            echo "::add-mask::$value"
+            echo "$key=$value" >> "$GITHUB_ENV"
+          done
+      - run: yarn migration:run
       - run: yarn verify
       - run: yarn rules:proof
       - run: yarn i18n:types

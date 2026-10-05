@@ -26,6 +26,19 @@ export class FakeKeyValueStore extends KeyValueStore {
     await Promise.resolve();
     this.values.delete(key);
   }
+  public override setIfCurrent(
+    key: string,
+    value: string,
+    ttlMs: number,
+    versionKey: string,
+    expected: string,
+  ): Promise<boolean> {
+    const entry = this.values.get(versionKey);
+    const current = entry && entry.expires > Date.now() ? entry.value : '0';
+    if (current !== expected) return Promise.resolve(false);
+    this.values.set(key, { value, expires: Date.now() + ttlMs });
+    return Promise.resolve(true);
+  }
   public override async incrementWindow(key: string, _ttlMs: number): Promise<number> {
     await Promise.resolve();
 

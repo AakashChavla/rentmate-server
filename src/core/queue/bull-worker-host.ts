@@ -3,6 +3,7 @@ import { Worker } from 'bullmq';
 import { AppConfig } from '../config/app-config.contract';
 import { WorkerHost, JobHandler } from './worker-host.contract';
 import type { QueueName } from '../config/config.constants';
+import { bullRedisConnection } from './bull-redis-connection';
 @Injectable()
 export class BullWorkerHost extends WorkerHost implements OnApplicationShutdown {
   private readonly workers: Worker[] = [];
@@ -11,7 +12,7 @@ export class BullWorkerHost extends WorkerHost implements OnApplicationShutdown 
   }
   public override register(queue: QueueName, handler: JobHandler): void {
     const worker = new Worker<unknown>(queue, (job) => handler.handle(job.id ?? '', job.data), {
-      connection: { url: this.config.get('REDIS_URL') },
+      connection: bullRedisConnection(this.config.get('REDIS_URL')),
       concurrency: this.config.get('WORKER_CONCURRENCY'),
     });
     this.workers.push(worker);

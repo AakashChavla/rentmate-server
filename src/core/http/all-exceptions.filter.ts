@@ -22,7 +22,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
     @Inject(RequestContext) private readonly context: RequestContext,
   ) {}
   public catch(error: unknown, host: ArgumentsHost): void {
-    const request = host.switchToHttp().getRequest<Request>();
+    const request = host
+      .switchToHttp()
+      .getRequest<
+        Request & { user?: { locale?: string }; organization?: { defaultLocale?: string } }
+      >();
     const response = host.switchToHttp().getResponse<Response>();
     const normalized =
       error instanceof CursorError ? new AppException(ErrorCode.INVALID_CURSOR) : error;
@@ -33,16 +37,33 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const code = normalized instanceof AppException ? normalized.code : codeForStatus(status);
     const cookies = request.cookies as Record<string, string> | undefined;
     const lang = resolveLocale({
+      user: request.user?.locale,
+      organization: request.organization?.defaultLocale,
       cookie: cookies?.[COOKIE_NAMES.LOCALE],
       acceptLanguage: request.get(HEADER_NAMES.ACCEPT_LANGUAGE),
     });
     const message = this.i18n.translate(ERROR_KEYS[code], { lang });
+    setRetryAfter(response, normalized);
     response.status(status).json({
       success: false,
       error: { code, message, ...safeDetails(normalized, status) },
       meta: { requestId: this.context.current()?.requestId ?? '' },
     });
   }
+}
+function setRetryAfter(response: Response, error: unknown): void {
+  if (
+    !(error instanceof AppException) ||
+    !error.details ||
+    typeof error.details !== 'object' ||
+    !('retryAfterSeconds' in error.details) ||
+    typeof error.details.retryAfterSeconds !== 'number'
+  )
+    return;
+  response.setHeader(
+    HEADER_NAMES.RETRY_AFTER,
+    String(Math.max(1, Math.ceil(error.details.retryAfterSeconds))),
+  );
 }
 function safeDetails(error: unknown, status: number): Record<string, unknown> {
   return status < LOG_STATUS.SERVER_ERROR &&

@@ -1,10 +1,28 @@
 import { z } from 'zod';
+import { AUTH_ENV } from './auth-env.constants';
 import { CONFIG_DEFAULTS as D, ENVIRONMENT, LOG_LEVELS, BOOLEAN_VALUES } from './config.constants';
 const booleanValue = z
   .union([z.boolean(), z.enum(BOOLEAN_VALUES)])
   .transform((value) => value === true || value === BOOLEAN_VALUES[0]);
 const port = z.coerce.number().int().positive().max(D.MAX_PORT);
+const secret = z
+  .string()
+  .min(AUTH_ENV.SECRET_MIN)
+  .refine((value) => !/change.?me|placeholder|example|your[_-]|replace.?me/i.test(value));
 const base = z.object({
+  JWT_ACCESS_SECRET: secret,
+  JWT_REFRESH_SECRET: secret,
+  OTP_HMAC_SECRET: secret,
+  COOKIE_DOMAIN: z.string().optional(),
+  SMTP_HOST: z
+    .string()
+    .regex(/^[a-zA-Z0-9._:-]+$/)
+    .default('localhost'),
+  SMTP_PORT: port.default(AUTH_ENV.SMTP_PORT),
+  SMTP_SECURE: booleanValue.default(false),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASSWORD: z.string().optional(),
+  EMAIL_FROM: z.email().default('noreply@rentmate.local'),
   NODE_ENV: z
     .enum([ENVIRONMENT.DEVELOPMENT, ENVIRONMENT.TEST, ENVIRONMENT.PRODUCTION])
     .default(ENVIRONMENT.DEVELOPMENT),

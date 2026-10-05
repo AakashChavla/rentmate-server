@@ -15,10 +15,12 @@ import type { AppEnvironment } from '../../core/config/env.schema';
 import { RequestContext } from '../../core/context/request-context';
 import { Req } from '@nestjs/common';
 import type { Request } from 'express';
+import { Public } from '../../core/http/http.decorators';
 class Payload {
   @IsString() public name!: string;
 }
 @Controller('probe')
+@Public()
 class ProbeController {
   public constructor(@Inject(RequestContext) private readonly context: RequestContext) {}
   @Get() public read(@Req() req: Request): unknown {

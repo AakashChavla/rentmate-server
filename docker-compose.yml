@@ -34,6 +34,16 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in your local environment}
       REDIS_URL: redis://redis:6379
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3001}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?Generate JWT_ACCESS_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Generate JWT_REFRESH_SECRET}
+      OTP_HMAC_SECRET: ${OTP_HMAC_SECRET:?Generate OTP_HMAC_SECRET}
+      SMTP_HOST: ${SMTP_HOST:-host.docker.internal}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_SECURE: ${SMTP_SECURE:-false}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@rentmate.local}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-}
       TRUST_PROXY: 1
       LOG_LEVEL: info
     depends_on:

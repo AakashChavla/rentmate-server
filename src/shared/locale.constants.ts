@@ -1,5 +1,6 @@
 export const SUPPORTED_LOCALES = ['en', 'hi'] as const;
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
+export type Locale = SupportedLocale;
 export const DEFAULT_LOCALE: SupportedLocale = 'en';
 export const LOCALE_COOKIE = 'NEXT_LOCALE';
 export const LOCALE_PATTERN = /^(en|hi)(?:-|$)/i;

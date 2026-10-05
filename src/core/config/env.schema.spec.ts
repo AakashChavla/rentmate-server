@@ -1,5 +1,11 @@
 import { envSchema } from './env.schema';
-const valid = { DB_PASSWORD: 'unit-fixture-only', REDIS_URL: 'redis://localhost:6379' };
+const valid = {
+  DB_PASSWORD: 'unit-fixture-only',
+  REDIS_URL: 'redis://localhost:6379',
+  JWT_ACCESS_SECRET: 'a'.repeat(64),
+  JWT_REFRESH_SECRET: 'b'.repeat(64),
+  OTP_HMAC_SECRET: 'c'.repeat(64),
+};
 describe('environment validation', () => {
   it('rejects invalid ports, booleans and missing infrastructure configuration', () => {
     expect(envSchema.safeParse({ ...valid, PORT: -1 }).success).toBe(false);

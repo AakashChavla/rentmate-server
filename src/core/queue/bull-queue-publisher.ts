@@ -3,6 +3,7 @@ import { Queue } from 'bullmq';
 import { AppConfig } from '../config/app-config.contract';
 import { QueuePublisher } from './queue-publisher.contract';
 import { LIMITS, TTL, type QueueName } from '../config/config.constants';
+import { bullRedisConnection } from './bull-redis-connection';
 export const jobOptions = {
   attempts: LIMITS.JOB_ATTEMPTS,
   backoff: { type: 'exponential', delay: TTL.JOB_BACKOFF },
@@ -23,7 +24,7 @@ export class BullQueuePublisher extends QueuePublisher {
     let queue = this.queues.get(name);
     if (!queue) {
       queue = new Queue(name, {
-        connection: { url: this.config.get('REDIS_URL') },
+        connection: bullRedisConnection(this.config.get('REDIS_URL')),
         defaultJobOptions: jobOptions,
       });
       this.queues.set(name, queue);
@@ -32,5 +33,16 @@ export class BullQueuePublisher extends QueuePublisher {
   }
   public override async close(): Promise<void> {
     await Promise.all([...this.queues.values()].map((queue) => queue.close()));
+  }
+  public override async schedule(name: QueueName, jobId: string, every: number): Promise<void> {
+    let queue = this.queues.get(name);
+    if (!queue) {
+      queue = new Queue(name, {
+        connection: bullRedisConnection(this.config.get('REDIS_URL')),
+        defaultJobOptions: jobOptions,
+      });
+      this.queues.set(name, queue);
+    }
+    await queue.upsertJobScheduler(jobId, { every }, { name, data: {} });
   }
 }

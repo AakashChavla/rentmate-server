@@ -5,6 +5,7 @@ import { TransactionRunner } from './transaction-runner.contract';
 import { INTERNAL_MESSAGES } from '../config/config.constants';
 interface TransactionState {
   rollbackOnly: boolean;
+  effects: (() => Promise<void>)[];
 }
 @Injectable()
 export class DefaultTransactionRunner extends TransactionRunner {
@@ -22,12 +23,21 @@ export class DefaultTransactionRunner extends TransactionRunner {
         throw error;
       }
     }
-    return this.database.transaction(() =>
-      this.ambient.run({ rollbackOnly: false }, async () => {
+    const state: TransactionState = { rollbackOnly: false, effects: [] };
+    const result = await this.database.transaction(() =>
+      this.ambient.run(state, async () => {
         const result = await action();
         if (this.ambient.getStore()?.rollbackOnly) throw new Error(INTERNAL_MESSAGES.ROLLBACK_ONLY);
         return result;
       }),
     );
+    for (const effect of state.effects) await effect();
+    return result;
+  }
+  public override afterCommit(effect: () => Promise<void>): Promise<void> {
+    const state = this.ambient.getStore();
+    if (!state) return effect();
+    state.effects.push(effect);
+    return Promise.resolve();
   }
 }

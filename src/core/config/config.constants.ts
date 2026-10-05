@@ -67,6 +67,7 @@ export const LIMITS = {
 } as const;
 export const TTL = { CACHE: minutes(5), JOB_BACKOFF: seconds(1), SHUTDOWN: seconds(10) } as const;
 export const QUEUE_NAMES = {
+  REGISTRATION_CLEANUP: 'registration.cleanup',
   EMAIL: 'notification.email',
   SMS: 'notification.sms',
   WHATSAPP: 'notification.whatsapp',

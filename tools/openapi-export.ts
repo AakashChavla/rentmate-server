@@ -5,9 +5,12 @@ import { RequestMethod } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
 import { ROUTES } from '../src/core/config/config.constants';
 import { openApiDocument } from '../src/core/http/swagger';
+import { randomBytes } from 'node:crypto';
 async function exportOpenApi(): Promise<void> {
   process.env.DB_PASSWORD ??= 'schema-export-only';
   process.env.REDIS_URL ??= 'redis://localhost:6379';
+  for (const key of ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'OTP_HMAC_SECRET'])
+    process.env[key] ??= randomBytes(32).toString('hex');
   const app = await NestFactory.create(AppModule, { logger: false });
   try {
     app.setGlobalPrefix(ROUTES.PREFIX, {

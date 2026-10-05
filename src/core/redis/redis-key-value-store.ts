@@ -24,6 +24,18 @@ export class RedisKeyValueStore extends KeyValueStore {
   public override async set(key: string, value: string, ttlMs: number): Promise<void> {
     await this.client.set(key, value, { PX: ttlMs });
   }
+  public override async setIfCurrent(
+    key: string,
+    value: string,
+    ttlMs: number,
+    versionKey: string,
+    expected: string,
+  ): Promise<boolean> {
+    return !!(await this.client.eval(REDIS.SET_IF_CURRENT, {
+      keys: [key, versionKey],
+      arguments: [value, String(ttlMs), expected],
+    }));
+  }
   public override async delete(key: string): Promise<void> {
     await this.client.del(key);
   }

@@ -1,0 +1,1690 @@
+{
+  "up": [
+    {
+      "query": "CREATE TABLE \"permissions\" (\"name\" character varying(100) NOT NULL, CONSTRAINT \"PK_48ce552495d14eae9b187bb6716\" PRIMARY KEY (\"name\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TYPE \"public\".\"role_name\" AS ENUM('SUPER_ADMIN', 'ORG_OWNER', 'PROPERTY_MANAGER', 'ACCOUNTANT', 'RECEPTIONIST', 'MAINTENANCE_STAFF', 'SECURITY_STAFF', 'TENANT')",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"role_permissions\" (\"role\" \"public\".\"role_name\" NOT NULL, \"permission\" character varying(100) NOT NULL, CONSTRAINT \"PK_9c116ac03805ca80baf3e8d2319\" PRIMARY KEY (\"role\", \"permission\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"roles\" (\"name\" \"public\".\"role_name\" NOT NULL, CONSTRAINT \"PK_648e3f5447f725579d7d4ffdfb7\" PRIMARY KEY (\"name\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TYPE \"public\".\"role_scope\" AS ENUM('ORGANIZATION', 'PROPERTY')",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"user_role_assignments\" (\"id\" uuid NOT NULL DEFAULT gen_random_uuid(), \"created_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"updated_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"deleted_at\" TIMESTAMP WITH TIME ZONE, \"organization_id\" uuid NOT NULL, \"user_id\" uuid NOT NULL, \"role\" \"public\".\"role_name\" NOT NULL, \"scope\" \"public\".\"role_scope\" NOT NULL DEFAULT 'ORGANIZATION', \"scope_id\" uuid NOT NULL, \"expires_at\" TIMESTAMP WITH TIME ZONE, CONSTRAINT \"UQ_9e03d80d069f2e185710465f1a6\" UNIQUE (\"organization_id\", \"user_id\", \"role\", \"scope\", \"scope_id\"), CONSTRAINT \"PK_ac634a3aa59d70bf0fb7b423b47\" PRIMARY KEY (\"id\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_a266fd4cc7be05fe3ae9cfe643\" ON \"user_role_assignments\"  (\"organization_id\", \"role\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_42f6d7bb1773204b79acd298bb\" ON \"user_role_assignments\"  (\"organization_id\", \"user_id\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TYPE \"public\".\"organization_plan\" AS ENUM('FREE', 'STANDARD', 'PREMIUM')",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"organizations\" (\"id\" uuid NOT NULL DEFAULT gen_random_uuid(), \"created_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"updated_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"deleted_at\" TIMESTAMP WITH TIME ZONE, \"name\" character varying(200) NOT NULL, \"slug\" character varying(250) NOT NULL, \"timezone\" character varying NOT NULL DEFAULT 'Asia/Kolkata', \"default_locale\" character varying(2) NOT NULL DEFAULT 'en', \"settings\" jsonb NOT NULL DEFAULT '{}', \"plan\" \"public\".\"organization_plan\" NOT NULL DEFAULT 'FREE', \"is_active\" boolean NOT NULL DEFAULT false, CONSTRAINT \"PK_6b031fcd0863e3f6b44230163f9\" PRIMARY KEY (\"id\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE UNIQUE INDEX \"IDX_963693341bd612aa01ddf3a4b6\" ON \"organizations\"  (\"slug\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TYPE \"public\".\"consent_document\" AS ENUM('TERMS', 'PRIVACY')",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"user_consents\" (\"id\" uuid NOT NULL DEFAULT gen_random_uuid(), \"created_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"updated_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"deleted_at\" TIMESTAMP WITH TIME ZONE, \"organization_id\" uuid NOT NULL, \"user_id\" uuid NOT NULL, \"document_type\" \"public\".\"consent_document\" NOT NULL, \"version\" character varying(100) NOT NULL, \"accepted_at\" TIMESTAMP WITH TIME ZONE NOT NULL, \"ip\" character varying(100) NOT NULL, CONSTRAINT \"PK_65e4c6d6204ad8719abf4b30326\" PRIMARY KEY (\"id\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_d54090f3c008e0b245e9e18ca5\" ON \"user_consents\"  (\"organization_id\", \"user_id\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TYPE \"public\".\"user_status\" AS ENUM('PENDING_VERIFICATION', 'INVITED', 'ACTIVE', 'SUSPENDED')",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"users\" (\"id\" uuid NOT NULL DEFAULT gen_random_uuid(), \"created_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"updated_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"deleted_at\" TIMESTAMP WITH TIME ZONE, \"organization_id\" uuid NOT NULL, \"email\" character varying(320) NOT NULL, \"password_hash\" text, \"full_name\" character varying(200) NOT NULL, \"phone\" character varying(30), \"locale\" character varying(2) NOT NULL DEFAULT 'en', \"status\" \"public\".\"user_status\" NOT NULL DEFAULT 'PENDING_VERIFICATION', \"email_verified_at\" TIMESTAMP WITH TIME ZONE, \"last_login_at\" TIMESTAMP WITH TIME ZONE, \"is_platform_admin\" boolean NOT NULL DEFAULT false, CONSTRAINT \"UQ_d44e049baf1987168ad1b16c945\" UNIQUE (\"organization_id\", \"id\"), CONSTRAINT \"PK_a3ffb1c0c8416b9fc6f907b7433\" PRIMARY KEY (\"id\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_d4b80b7218f84fbb8a01934bbb\" ON \"users\"  (\"organization_id\", \"status\", \"created_at\", \"id\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TYPE \"public\".\"otp_purpose\" AS ENUM('LOGIN', 'PASSWORD_RESET', 'EMAIL_VERIFICATION')",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"otp_verifications\" (\"id\" uuid NOT NULL DEFAULT gen_random_uuid(), \"organization_id\" uuid NOT NULL, \"user_id\" uuid NOT NULL, \"purpose\" \"public\".\"otp_purpose\" NOT NULL, \"code_hash\" character varying(64) NOT NULL, \"expires_at\" TIMESTAMP WITH TIME ZONE NOT NULL, \"consumed_at\" TIMESTAMP WITH TIME ZONE, \"created_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT \"PK_91d17e75ac3182dba6701869b39\" PRIMARY KEY (\"id\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_882bee25f064641430231ab1d3\" ON \"otp_verifications\"  (\"organization_id\", \"user_id\", \"purpose\", \"created_at\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"refresh_tokens\" (\"id\" uuid NOT NULL, \"organization_id\" uuid NOT NULL, \"user_id\" uuid NOT NULL, \"family_id\" uuid NOT NULL, \"token_hash\" character varying(64) NOT NULL, \"replaced_by_id\" uuid, \"revoked_at\" TIMESTAMP WITH TIME ZONE, \"expires_at\" TIMESTAMP WITH TIME ZONE NOT NULL, \"created_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"ip\" character varying(100) NOT NULL, \"user_agent\" character varying(1000) NOT NULL, CONSTRAINT \"PK_7d8bee0204106019488c4c50ffa\" PRIMARY KEY (\"id\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_c2675abacb1a00bb3d6cbe7ca1\" ON \"refresh_tokens\"  (\"organization_id\", \"family_id\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_18a5dac5f8fe625480b6e2e6bf\" ON \"refresh_tokens\"  (\"organization_id\", \"user_id\") ",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"role_permissions\" ADD CONSTRAINT \"FK_5d5086bd299f773d403574cf1c8\" FOREIGN KEY (\"role\") REFERENCES \"roles\"(\"name\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"role_permissions\" ADD CONSTRAINT \"FK_0ab5175ebb91e7a07f850acf42e\" FOREIGN KEY (\"permission\") REFERENCES \"permissions\"(\"name\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"user_role_assignments\" ADD CONSTRAINT \"FK_42f6d7bb1773204b79acd298bbd\" FOREIGN KEY (\"user_id\", \"organization_id\") REFERENCES \"users\"(\"id\",\"organization_id\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"user_role_assignments\" ADD CONSTRAINT \"FK_b8a26cbd07e6f95401323cd0c1f\" FOREIGN KEY (\"role\") REFERENCES \"roles\"(\"name\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"user_consents\" ADD CONSTRAINT \"FK_d54090f3c008e0b245e9e18ca54\" FOREIGN KEY (\"user_id\", \"organization_id\") REFERENCES \"users\"(\"id\",\"organization_id\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"users\" ADD CONSTRAINT \"FK_21a659804ed7bf61eb91688dea7\" FOREIGN KEY (\"organization_id\") REFERENCES \"organizations\"(\"id\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"otp_verifications\" ADD CONSTRAINT \"FK_5e7cf9d872f478f050fc4485c17\" FOREIGN KEY (\"user_id\", \"organization_id\") REFERENCES \"users\"(\"id\",\"organization_id\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"refresh_tokens\" ADD CONSTRAINT \"FK_18a5dac5f8fe625480b6e2e6bf0\" FOREIGN KEY (\"user_id\", \"organization_id\") REFERENCES \"users\"(\"id\",\"organization_id\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "CREATE UNIQUE INDEX users_email_lower_unique ON users (lower(email))",
+      "parameters": []
+    },
+    {
+      "query": "INSERT INTO roles(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN"]
+    },
+    {
+      "query": "INSERT INTO roles(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER"]
+    },
+    {
+      "query": "INSERT INTO roles(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER"]
+    },
+    {
+      "query": "INSERT INTO roles(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT"]
+    },
+    {
+      "query": "INSERT INTO roles(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST"]
+    },
+    {
+      "query": "INSERT INTO roles(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["MAINTENANCE_STAFF"]
+    },
+    {
+      "query": "INSERT INTO roles(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["SECURITY_STAFF"]
+    },
+    {
+      "query": "INSERT INTO roles(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["TENANT"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["organization:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["organization:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["organization:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["organization:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["organization:assign"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["user:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["user:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["user:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["user:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["user:assign"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["role:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["role:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["role:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["role:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["role:assign"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["property:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["property:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["property:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["property:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["property:assign"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["unit:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["unit:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["unit:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["unit:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["unit:assign"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["tenant:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["tenant:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["tenant:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["tenant:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["tenant:assign"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["lease:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["lease:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["lease:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["lease:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["lease:assign"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["invoice:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["invoice:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["invoice:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["invoice:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["invoice:assign"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["payment:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["payment:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["payment:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["payment:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["payment:assign"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["expense:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["expense:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["expense:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["expense:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["expense:assign"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["complaint:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["complaint:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["complaint:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["complaint:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["complaint:assign"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["visitor:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["visitor:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["visitor:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["visitor:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["visitor:assign"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["notification:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["notification:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["notification:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["notification:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["notification:assign"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["report:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["report:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["report:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["report:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["report:assign"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["audit:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["audit:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["audit:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["audit:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["audit:assign"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["platform:read"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["platform:create"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["platform:update"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["platform:delete"]
+    },
+    {
+      "query": "INSERT INTO permissions(name) VALUES($1) ON CONFLICT DO NOTHING",
+      "parameters": ["platform:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "organization:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "organization:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "organization:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "organization:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "organization:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "user:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "user:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "user:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "user:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "user:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "role:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "role:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "role:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "role:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "role:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "property:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "property:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "property:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "property:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "property:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "unit:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "unit:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "unit:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "unit:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "unit:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "tenant:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "tenant:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "tenant:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "tenant:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "tenant:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "lease:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "lease:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "lease:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "lease:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "lease:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "invoice:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "invoice:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "invoice:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "invoice:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "invoice:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "payment:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "payment:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "payment:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "payment:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "payment:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "expense:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "expense:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "expense:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "expense:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "expense:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "complaint:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "complaint:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "complaint:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "complaint:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "complaint:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "visitor:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "visitor:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "visitor:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "visitor:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "visitor:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "notification:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "notification:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "notification:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "notification:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "notification:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "report:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "report:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "report:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "report:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "report:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "audit:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "audit:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "audit:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "audit:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "audit:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "platform:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "platform:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "platform:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "platform:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SUPER_ADMIN", "platform:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "organization:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "organization:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "organization:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "organization:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "organization:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "user:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "user:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "user:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "user:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "user:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "role:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "role:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "role:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "role:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "role:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "property:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "property:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "property:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "property:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "property:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "unit:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "unit:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "unit:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "unit:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "unit:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "tenant:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "tenant:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "tenant:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "tenant:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "tenant:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "lease:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "lease:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "lease:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "lease:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "lease:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "invoice:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "invoice:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "invoice:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "invoice:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "invoice:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "payment:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "payment:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "payment:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "payment:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "payment:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "expense:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "expense:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "expense:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "expense:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "expense:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "complaint:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "complaint:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "complaint:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "complaint:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "complaint:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "visitor:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "visitor:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "visitor:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "visitor:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "visitor:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "notification:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "notification:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "notification:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "notification:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "notification:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "report:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "report:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "report:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "report:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "report:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "audit:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "audit:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "audit:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "audit:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ORG_OWNER", "audit:assign"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "organization:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "user:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "role:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "property:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "property:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "property:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "property:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "unit:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "unit:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "unit:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "unit:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "tenant:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "tenant:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "tenant:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "tenant:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "lease:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "lease:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "lease:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "lease:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "invoice:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "invoice:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "invoice:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "invoice:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "payment:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "payment:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "payment:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "payment:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "expense:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "expense:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "expense:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "expense:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "complaint:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "complaint:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "complaint:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "complaint:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "visitor:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "visitor:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "visitor:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "visitor:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "notification:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "notification:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "notification:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "notification:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "report:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "report:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "report:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["PROPERTY_MANAGER", "report:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "tenant:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "tenant:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "tenant:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "tenant:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "lease:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "lease:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "lease:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "lease:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "invoice:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "invoice:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "invoice:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "invoice:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "payment:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "payment:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "payment:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "payment:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "expense:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "expense:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "expense:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "expense:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "report:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "report:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "report:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["ACCOUNTANT", "report:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "unit:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "unit:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "unit:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "unit:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "tenant:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "tenant:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "tenant:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "tenant:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "complaint:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "complaint:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "complaint:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "complaint:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "visitor:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "visitor:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "visitor:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["RECEPTIONIST", "visitor:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["MAINTENANCE_STAFF", "property:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["MAINTENANCE_STAFF", "property:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["MAINTENANCE_STAFF", "property:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["MAINTENANCE_STAFF", "property:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["MAINTENANCE_STAFF", "unit:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["MAINTENANCE_STAFF", "unit:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["MAINTENANCE_STAFF", "unit:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["MAINTENANCE_STAFF", "unit:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["MAINTENANCE_STAFF", "complaint:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["MAINTENANCE_STAFF", "complaint:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["MAINTENANCE_STAFF", "complaint:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["MAINTENANCE_STAFF", "complaint:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SECURITY_STAFF", "complaint:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SECURITY_STAFF", "complaint:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SECURITY_STAFF", "complaint:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SECURITY_STAFF", "complaint:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SECURITY_STAFF", "visitor:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SECURITY_STAFF", "visitor:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SECURITY_STAFF", "visitor:update"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["SECURITY_STAFF", "visitor:delete"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["TENANT", "tenant:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["TENANT", "lease:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["TENANT", "invoice:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["TENANT", "payment:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["TENANT", "complaint:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["TENANT", "complaint:create"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["TENANT", "visitor:read"]
+    },
+    {
+      "query": "INSERT INTO role_permissions(role,permission) VALUES($1,$2) ON CONFLICT DO NOTHING",
+      "parameters": ["TENANT", "notification:read"]
+    }
+  ],
+  "down": [
+    {
+      "query": "DROP TABLE \"permissions\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TYPE \"public\".\"role_name\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"role_permissions\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"roles\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TYPE \"public\".\"role_scope\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"user_role_assignments\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_a266fd4cc7be05fe3ae9cfe643\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_42f6d7bb1773204b79acd298bb\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TYPE \"public\".\"organization_plan\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"organizations\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_963693341bd612aa01ddf3a4b6\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TYPE \"public\".\"consent_document\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"user_consents\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_d54090f3c008e0b245e9e18ca5\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TYPE \"public\".\"user_status\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"users\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_d4b80b7218f84fbb8a01934bbb\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TYPE \"public\".\"otp_purpose\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"otp_verifications\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_882bee25f064641430231ab1d3\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"refresh_tokens\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_c2675abacb1a00bb3d6cbe7ca1\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_18a5dac5f8fe625480b6e2e6bf\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"role_permissions\" DROP CONSTRAINT \"FK_5d5086bd299f773d403574cf1c8\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"role_permissions\" DROP CONSTRAINT \"FK_0ab5175ebb91e7a07f850acf42e\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"user_role_assignments\" DROP CONSTRAINT \"FK_42f6d7bb1773204b79acd298bbd\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"user_role_assignments\" DROP CONSTRAINT \"FK_b8a26cbd07e6f95401323cd0c1f\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"user_consents\" DROP CONSTRAINT \"FK_d54090f3c008e0b245e9e18ca54\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"users\" DROP CONSTRAINT \"FK_21a659804ed7bf61eb91688dea7\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"otp_verifications\" DROP CONSTRAINT \"FK_5e7cf9d872f478f050fc4485c17\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"refresh_tokens\" DROP CONSTRAINT \"FK_18a5dac5f8fe625480b6e2e6bf0\"",
+      "parameters": []
+    }
+  ]
+}

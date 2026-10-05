@@ -1,3 +1,5 @@
+import { ExternalCallPolicy } from './outbound/external-call-policy.contract';
+import { DefaultExternalCallPolicy } from './outbound/default-external-call-policy';
 import { WorkerHost } from './queue/worker-host.contract';
 import { BullWorkerHost } from './queue/bull-worker-host';
 import { InfrastructureLifecycle } from './lifecycle/infrastructure-lifecycle';
@@ -23,6 +25,7 @@ import { DefaultEventBus } from './events/default-event-bus';
 @Global()
 @Module({
   providers: [
+    { provide: ExternalCallPolicy, useClass: DefaultExternalCallPolicy },
     { provide: WorkerHost, useClass: BullWorkerHost },
     InfrastructureLifecycle,
     { provide: AppConfig, useClass: AppConfigService },
@@ -37,6 +40,7 @@ import { DefaultEventBus } from './events/default-event-bus';
     { provide: EventBus, useClass: DefaultEventBus },
   ],
   exports: [
+    ExternalCallPolicy,
     WorkerHost,
     AppConfig,
     Clock,
