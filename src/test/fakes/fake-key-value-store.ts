@@ -32,9 +32,14 @@ export class FakeKeyValueStore extends KeyValueStore {
     ttlMs: number,
     versionKey: string,
     expected: string,
+    organizationVersion?: { key: string; value: string },
   ): Promise<boolean> {
     const entry = this.values.get(versionKey);
     const current = entry && entry.expires > Date.now() ? entry.value : '0';
+    const orgEntry = organizationVersion ? this.values.get(organizationVersion.key) : undefined;
+    const orgCurrent = orgEntry && orgEntry.expires > Date.now() ? orgEntry.value : '0';
+    if (organizationVersion && orgCurrent !== organizationVersion.value)
+      return Promise.resolve(false);
     if (current !== expected) return Promise.resolve(false);
     this.values.set(key, { value, expires: Date.now() + ttlMs });
     return Promise.resolve(true);

@@ -1,3 +1,4 @@
+import type { OrganizationPatch } from '../../shared/property.types';
 import { randomUUID } from 'node:crypto';
 import { UserRepository } from '../../modules/users';
 import { OrganizationRepository } from '../../modules/organizations';
@@ -83,6 +84,11 @@ export class FakeIdentityUsers extends UserRepository {
 }
 export class FakeIdentityOrganizations extends OrganizationRepository {
   public readonly organizations = new Map<string, OrganizationRecord>();
+  public override update(id: string, patch: OrganizationPatch): Promise<void> {
+    const org = this.organizations.get(id);
+    if (org) Object.assign(org, patch);
+    return Promise.resolve();
+  }
   public override get(id: string): Promise<OrganizationRecord | null> {
     return Promise.resolve(this.organizations.get(id) ?? null);
   }
@@ -175,6 +181,10 @@ export class FakeIdentityContexts extends PermissionContextLoader {
       isPlatformAdmin: false,
       onboarding: { steps: [] },
     };
+  }
+  public override invalidateOrganization(_org: string): Promise<void> {
+    this.invalidations += 1;
+    return Promise.resolve();
   }
   public override invalidate(_org: string, _user: string): Promise<void> {
     this.invalidations += 1;

@@ -54,6 +54,8 @@ export class TypeOrmRoleRepository extends RoleRepository {
     organizationId: string,
     userId: string,
     role: string,
+    scope: string = SCOPE.ORGANIZATION,
+    scopeId: string = organizationId,
   ): Promise<void> {
     await this.db.withManager((m) =>
       m
@@ -64,8 +66,9 @@ export class TypeOrmRoleRepository extends RoleRepository {
           organizationId,
           userId,
           role,
-          scope: SCOPE.ORGANIZATION,
-          scopeId: organizationId,
+          scope: scope as typeof SCOPE.ORGANIZATION,
+          scopeId,
+          propertyId: scope === SCOPE.PROPERTY ? scopeId : null,
         })
         .orIgnore()
         .execute(),

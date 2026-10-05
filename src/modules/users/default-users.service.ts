@@ -1,3 +1,4 @@
+import { OrganizationPropertyDirectory } from '../organizations';
 import { Inject, Injectable } from '@nestjs/common';
 import { UsersService, UserRepository } from './users.contract';
 import { SessionRevoker } from '../auth';
@@ -18,6 +19,8 @@ export class DefaultUsersService extends UsersService {
     @Inject(PermissionChecker) private readonly permissions: PermissionChecker,
     @Inject(TransactionRunner) private readonly tx: TransactionRunner,
     @Inject(SecurityEventLogger) private readonly events: SecurityEventLogger,
+    @Inject(OrganizationPropertyDirectory)
+    private readonly properties: OrganizationPropertyDirectory,
   ) {
     super();
   }
@@ -80,15 +83,16 @@ export class DefaultUsersService extends UsersService {
     id: string,
     role: string,
     scope: string,
+    scopeId?: string,
   ): Promise<void> {
-    if (scope !== SCOPE.ORGANIZATION) throw new AppException(ErrorCode.NOT_SUPPORTED_YET);
+    const targetScope = await this.roleScope(org, role, scope, scopeId);
     if (role === ROLE.SUPER_ADMIN || !Object.values(ROLE).includes(role as typeof ROLE.OWNER))
       throw new AppException(ErrorCode.FORBIDDEN);
     await this.tx.run(async () => {
       await this.roles.lockOwners(org);
       await this.owner(org, actor);
       await this.get(org, id);
-      await this.roles.assign(org, id, role);
+      await this.roles.assign(org, id, role, scope, targetScope);
       await this.tx.afterCommit(() => this.contexts.invalidate(org, id));
     });
     this.events.record(E.ASSIGNED, { userId: id, organizationId: org });
@@ -113,6 +117,22 @@ export class DefaultUsersService extends UsersService {
       await this.tx.afterCommit(() => this.contexts.invalidate(org, id));
     });
     this.events.record(E.REMOVED, { userId: id, organizationId: org });
+  }
+  private async roleScope(
+    org: string,
+    role: string,
+    scope: string,
+    scopeId: string | undefined,
+  ): Promise<string> {
+    const targetScope = scopeId ?? org;
+    if (scope === SCOPE.PROPERTY && (!scopeId || !(await this.properties.exists(org, targetScope))))
+      throw new AppException(ErrorCode.NOT_FOUND);
+    if (scope === SCOPE.ORGANIZATION && targetScope !== org)
+      throw new AppException(ErrorCode.NOT_FOUND);
+    if (scope === SCOPE.PROPERTY && role === ROLE.OWNER)
+      throw new AppException(ErrorCode.FORBIDDEN);
+
+    return targetScope;
   }
   private async owner(org: string, id: string): Promise<void> {
     const user = await this.get(org, id);

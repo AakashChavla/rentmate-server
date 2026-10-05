@@ -1,6 +1,11 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { ErrorCode } from './error-code.constants';
 const STATUS_BY_CODE: Partial<Record<ErrorCode, number>> = {
+  [ErrorCode.INVALID_PROPERTY_CONFIG]: HttpStatus.BAD_REQUEST,
+  [ErrorCode.INVITE_INVALID]: HttpStatus.BAD_REQUEST,
+  [ErrorCode.INVITE_EXPIRED]: HttpStatus.GONE,
+  [ErrorCode.INVITE_USED]: HttpStatus.CONFLICT,
+  [ErrorCode.INVITE_DUPLICATE]: HttpStatus.CONFLICT,
   [ErrorCode.INVALID_CREDENTIALS]: HttpStatus.UNAUTHORIZED,
   [ErrorCode.SESSION_REVOKED]: HttpStatus.UNAUTHORIZED,
   [ErrorCode.TOKEN_EXPIRED]: HttpStatus.UNAUTHORIZED,

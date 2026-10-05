@@ -10,7 +10,7 @@
   "scripts": {
     "lint": "eslint \"src/**/*.ts\" \"tools/**/*.ts\" --max-warnings 0",
     "lint:fix": "eslint \"src/**/*.ts\" \"tools/**/*.ts\" --fix",
-    "format": "prettier --write .",
+    "format": "node tools/format-atomic.cjs",
     "typecheck": "tsc --noEmit",
     "arch:check": "depcruise src --config .dependency-cruiser.cjs",
     "rules:check": "tsx tools/check-rules.ts",

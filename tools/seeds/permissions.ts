@@ -45,6 +45,7 @@ export function rolePermissions(role: string): string[] {
 function allowedAction(role: string, resource: string, action: string | undefined): boolean {
   return (
     action === READ ||
+    (role === ROLE.MANAGER && resource === 'user' && action === 'invite') ||
     (resource === 'complaint' && action === 'create') ||
     ([ROLE.MANAGER, ROLE.ACCOUNTANT, ROLE.RECEPTIONIST, ROLE.MAINTENANCE, ROLE.SECURITY].includes(
       role as typeof ROLE.MANAGER,

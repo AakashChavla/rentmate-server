@@ -20,5 +20,10 @@
   "NOT_SUPPORTED_YET": "This feature is not available yet.",
   "CSRF_ORIGIN_MISMATCH": "The request origin is not permitted.",
   "INVALID_CURSOR": "The page cursor is invalid.",
-  "INFRASTRUCTURE_UNAVAILABLE": "The service is temporarily unavailable."
+  "INFRASTRUCTURE_UNAVAILABLE": "The service is temporarily unavailable.",
+  "INVALID_PROPERTY_CONFIG": "Check the configuration for this property type.",
+  "INVITE_INVALID": "This invitation link is invalid.",
+  "INVITE_EXPIRED": "This invitation has expired. Ask for a new invitation.",
+  "INVITE_USED": "This invitation is already used or revoked.",
+  "INVITE_DUPLICATE": "An account or pending invitation already exists for this email."
 }

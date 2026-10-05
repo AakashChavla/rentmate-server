@@ -72,8 +72,8 @@ it('denies anonymous and tenant access, prevents cross-org IDOR and enforces ass
     .set('Cookie', owner.cookies)
     .set('Origin', ORIGIN)
     .send({ role: ROLE.MANAGER, scope: 'PROPERTY' })
-    .expect(422);
-  expect((property.body as { error: { code: string } }).error.code).toBe('NOT_SUPPORTED_YET');
+    .expect(404);
+  expect((property.body as { error: { code: string } }).error.code).toBe('NOT_FOUND');
   await fixture
     .http()
     .post(`/api/v1/users/${tenant.me.user.id}/roles`)

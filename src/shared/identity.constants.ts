@@ -120,4 +120,11 @@ export const PERMISSION_RESOURCES = [
   'audit',
   'platform',
 ] as const;
-export const PERMISSION_ACTIONS = ['read', 'create', 'update', 'delete', 'assign'] as const;
+export const PERMISSION_ACTIONS = [
+  'read',
+  'create',
+  'update',
+  'delete',
+  'assign',
+  'invite',
+] as const;

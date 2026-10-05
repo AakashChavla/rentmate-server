@@ -81,7 +81,14 @@ export class UsersController {
     @Param('id', ParseUUIDPipe) id: string,
     @ValidatedBody(AssignRoleDto) body: AssignRoleDto,
   ): Promise<{ accepted: boolean }> {
-    await this.users.assign(request.session.org, request.session.sub, id, body.role, body.scope);
+    await this.users.assign(
+      request.session.org,
+      request.session.sub,
+      id,
+      body.role,
+      body.scope,
+      body.scopeId,
+    );
     return { accepted: true };
   }
   @RequirePermissions('role:assign')

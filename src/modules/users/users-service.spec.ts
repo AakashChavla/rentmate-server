@@ -1,3 +1,4 @@
+import { FakePropertyDirectory } from '../../test/fakes/fake-property-directory';
 import { UnitIdentityFixture } from '../../test/fakes/identity-fixture';
 import { DefaultUsersService } from './default-users.service';
 import { PermissionChecker } from '../authorization';
@@ -7,7 +8,7 @@ class AllowedPermissions extends PermissionChecker {
     return true;
   }
 }
-it('rejects last-owner removal, cross-org reads and unsupported role scope', async () => {
+it('rejects last-owner removal, cross-org reads and invalid property scope', async () => {
   const f = new UnitIdentityFixture();
   const input = {
     email: 'owner@unit.rentmate.test',
@@ -33,6 +34,7 @@ it('rejects last-owner removal, cross-org reads and unsupported role scope', asy
     new AllowedPermissions(),
     f.tx,
     f.events,
+    new FakePropertyDirectory(),
   );
   await expect(service.get('foreign-org', me.user.id)).rejects.toMatchObject({ code: 'NOT_FOUND' });
   await expect(
@@ -40,5 +42,5 @@ it('rejects last-owner removal, cross-org reads and unsupported role scope', asy
   ).rejects.toMatchObject({ code: 'LAST_OWNER' });
   await expect(
     service.assign(me.organization.id, me.user.id, me.user.id, 'TENANT', 'PROPERTY'),
-  ).rejects.toMatchObject({ code: 'NOT_SUPPORTED_YET' });
+  ).rejects.toMatchObject({ code: 'NOT_FOUND' });
 });

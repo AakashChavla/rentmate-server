@@ -69,6 +69,29 @@ it('rejects altered encrypted jobs and ignores expired codes before SMTP deliver
   await mail.deliver({ ...queue.payload, expires: 0 });
   expect(smtp.messages).toHaveLength(count);
 });
+it('encrypts invitation URLs and delivers both locales with a seven-day queue lifetime', async () => {
+  const before = smtp.messages.length;
+  const url = 'http://localhost:3001/accept-invite?token=' + 'a'.repeat(64);
+  for (const locale of ['en', 'hi'] as const) {
+    const start = Date.now();
+    await mail.enqueue({
+      recipient: 'invite@fixture.rentmate.test',
+      locale,
+      purpose: 'INVITATION',
+      inviteUrl: url,
+      organizationName: 'Fixture organization',
+    });
+    expect(JSON.stringify(queue.payload)).not.toContain(url);
+    expect(Number(queue.payload.expires) - start).toBeGreaterThan(6 * 24 * 60 * 60 * 1000);
+    expect(Number(queue.payload.expires) - start).toBeLessThanOrEqual(
+      7 * 24 * 60 * 60 * 1000 + 1000,
+    );
+    await mail.deliver(queue.payload);
+  }
+  expect(smtp.messages.length).toBe(before + 2);
+  expect(smtp.messages.at(-2)).toContain('Fixture organization');
+  expect(smtp.messages.at(-1)).toContain('charset=utf-8');
+});
 class SmtpJob extends EmailJob {
   public constructor(private readonly provider: SmtpEmailProvider) {
     super();

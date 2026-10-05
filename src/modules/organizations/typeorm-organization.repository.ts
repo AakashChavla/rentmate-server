@@ -1,3 +1,4 @@
+import type { OrganizationPatch } from '../../shared/property.types';
 import { Injectable, Inject } from '@nestjs/common';
 import { OrganizationRepository } from './organizations.contract';
 import { OrganizationEntity } from './organization.entity';
@@ -8,6 +9,19 @@ import type { Locale } from '../../shared/locale.constants';
 export class TypeOrmOrganizationRepository extends OrganizationRepository {
   public constructor(@Inject(DatabaseConnection) private readonly db: DatabaseConnection) {
     super();
+  }
+  public override async update(id: string, patch: OrganizationPatch): Promise<void> {
+    const { settings, ...fields } = patch;
+    await this.db.withManager((m) =>
+      m
+        .getRepository(OrganizationEntity)
+        .createQueryBuilder()
+        .update()
+        .set({ ...fields, ...(settings ? { settings: () => ':settings' } : {}) })
+        .where('id=:id', { id })
+        .setParameters({ settings: JSON.stringify(settings ?? {}) })
+        .execute(),
+    );
   }
   public override get(id: string): Promise<OrganizationRecord | null> {
     return this.db.withManager((m) => m.getRepository(OrganizationEntity).findOneBy({ id }));

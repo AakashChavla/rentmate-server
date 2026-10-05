@@ -7,6 +7,7 @@ export abstract class KeyValueStore {
     ttlMs: number,
     versionKey: string,
     expected: string,
+    organizationVersion?: { key: string; value: string },
   ): Promise<boolean>;
   public abstract delete(key: string): Promise<void>;
   public abstract incrementWindow(key: string, ttlMs: number): Promise<number>;

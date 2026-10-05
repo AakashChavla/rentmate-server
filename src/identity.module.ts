@@ -1,3 +1,22 @@
+import {
+  OrganizationService,
+  OrganizationPropertyDirectory,
+  InvitationRepository,
+  InvitationsService,
+  InvitationPolicy,
+} from './modules/organizations';
+import { DefaultOrganizationService } from './modules/organizations/default-organization.service';
+import { OrganizationController } from './modules/organizations/organization.controller';
+import { TypeOrmInvitationRepository } from './modules/organizations/typeorm-invitation.repository';
+import { DefaultInvitationsService } from './modules/organizations/default-invitations.service';
+import { DefaultInvitationPolicy } from './modules/organizations/default-invitation-policy.service';
+import { InvitationsController } from './modules/organizations/invitations.controller';
+import { PropertyRepository, PropertiesService } from './modules/properties';
+import { TypeOrmPropertyRepository } from './modules/properties/typeorm-property.repository';
+import { DefaultPropertiesService } from './modules/properties/default-properties.service';
+import { PropertiesController } from './modules/properties/properties.controller';
+import { InvitationToken } from './integrations/invitation-token/invitation-token.contract';
+import { CryptoInvitationToken } from './integrations/invitation-token/adapters/crypto/crypto-invitation-token';
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { CoreModule } from './core/core.module';
@@ -53,8 +72,23 @@ import { EmailJob } from './integrations/email/email-job.contract';
 import { DefaultEmailJob } from './integrations/email/default-email-job';
 @Module({
   imports: [CoreModule],
-  controllers: [AuthController, UsersController, RolesController],
+  controllers: [
+    AuthController,
+    UsersController,
+    RolesController,
+    OrganizationController,
+    PropertiesController,
+    InvitationsController,
+  ],
   providers: [
+    { provide: OrganizationService, useClass: DefaultOrganizationService },
+    { provide: OrganizationPropertyDirectory, useClass: TypeOrmPropertyRepository },
+    { provide: PropertyRepository, useClass: TypeOrmPropertyRepository },
+    { provide: PropertiesService, useClass: DefaultPropertiesService },
+    { provide: InvitationRepository, useClass: TypeOrmInvitationRepository },
+    { provide: InvitationsService, useClass: DefaultInvitationsService },
+    { provide: InvitationPolicy, useClass: DefaultInvitationPolicy },
+    { provide: InvitationToken, useClass: CryptoInvitationToken },
     { provide: SecurityEventLogger, useClass: PinoSecurityEventLogger },
     { provide: PasswordHasher, useClass: Argon2PasswordHasher },
     { provide: TokenSigner, useClass: JoseTokenSigner },
@@ -85,6 +119,15 @@ import { DefaultEmailJob } from './integrations/email/default-email-job';
     { provide: APP_GUARD, useClass: JwtAuthGuard },
   ],
   exports: [
+    PropertyRepository,
+    PropertiesService,
+    InvitationRepository,
+    InvitationsService,
+    OrganizationRepository,
+    OrganizationService,
+    OrganizationPropertyDirectory,
+    InvitationToken,
+    PermissionContextStore,
     AuthRepository,
     EmailProvider,
     SessionService,

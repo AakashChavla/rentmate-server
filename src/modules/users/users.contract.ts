@@ -44,6 +44,7 @@ export abstract class UsersService {
     id: string,
     role: string,
     scope: string,
+    scopeId?: string,
   ): Promise<void>;
   public abstract remove(org: string, actor: string, id: string, assignment: string): Promise<void>;
 }

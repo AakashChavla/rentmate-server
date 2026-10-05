@@ -1,5 +1,5 @@
 import { Body, Query, ValidationPipe, type Type } from '@nestjs/common';
-import { ApiBody } from '@nestjs/swagger';
+import { ApiBody, ApiQuery } from '@nestjs/swagger';
 import { AppException } from '../errors/app-exception';
 import { ErrorCode } from '../errors/error-code.constants';
 import { validationFields } from './validation';
@@ -23,5 +23,11 @@ export function ValidatedBody(model: Type<object>): ParameterDecorator {
   };
 }
 export function ValidatedQuery(model: Type<object>): ParameterDecorator {
-  return Query(pipe(model));
+  return (target, key, index) => {
+    if (key !== undefined) {
+      const descriptor = Object.getOwnPropertyDescriptor(target, key);
+      if (descriptor) ApiQuery({ type: model })(target, key, descriptor);
+    }
+    Query(pipe(model))(target, key, index);
+  };
 }

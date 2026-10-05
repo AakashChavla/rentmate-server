@@ -4,6 +4,8 @@ export interface AuthEmail {
   locale: Locale;
   purpose: string;
   code?: string;
+  inviteUrl?: string;
+  organizationName?: string;
 }
 export abstract class EmailProvider {
   public abstract enqueue(email: AuthEmail): Promise<void>;

@@ -30,10 +30,16 @@ export class RedisKeyValueStore extends KeyValueStore {
     ttlMs: number,
     versionKey: string,
     expected: string,
+    organizationVersion?: { key: string; value: string },
   ): Promise<boolean> {
     return !!(await this.client.eval(REDIS.SET_IF_CURRENT, {
-      keys: [key, versionKey],
-      arguments: [value, String(ttlMs), expected],
+      keys: [key, versionKey, ...(organizationVersion ? [organizationVersion.key] : [])],
+      arguments: [
+        value,
+        String(ttlMs),
+        expected,
+        ...(organizationVersion ? [organizationVersion.value] : []),
+      ],
     }));
   }
   public override async delete(key: string): Promise<void> {

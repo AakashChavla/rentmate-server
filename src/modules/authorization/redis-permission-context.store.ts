@@ -1,3 +1,4 @@
+import { ORGANIZATION_VERSION } from '../../shared/property.constants';
 import { Injectable, Inject } from '@nestjs/common';
 import { KeyValueStore } from '../../core/redis/key-value-store.contract';
 import { PermissionContextStore } from './permission.contract';
@@ -13,7 +14,11 @@ export class RedisPermissionContextStore extends PermissionContextStore {
     super();
   }
   public override async version(org: string, user: string): Promise<string> {
-    return (await this.store.get(K.contextVersion(org, user))) ?? INITIAL_VERSION;
+    const versions = await Promise.all([
+      this.store.get(K.contextVersion(org, user)),
+      this.store.get(ORGANIZATION_VERSION(org)),
+    ]);
+    return versions.map((value) => value ?? INITIAL_VERSION).join(SEPARATOR);
   }
   public override async get(org: string, user: string): Promise<PermissionContext | null> {
     const [value, version] = await Promise.all([
@@ -35,8 +40,12 @@ export class RedisPermissionContextStore extends PermissionContextStore {
       JSON.stringify({ context, version }),
       T.CONTEXT,
       K.contextVersion(org, user),
-      version,
+      version.split(SEPARATOR)[0] ?? INITIAL_VERSION,
+      { key: ORGANIZATION_VERSION(org), value: version.split(SEPARATOR)[1] ?? INITIAL_VERSION },
     );
+  }
+  public override async invalidateOrganization(org: string): Promise<void> {
+    await this.store.set(ORGANIZATION_VERSION(org), this.ids.next(), T.CONTEXT + T.ACCESS);
   }
   public override async invalidate(org: string, user: string): Promise<void> {
     await this.store.set(K.contextVersion(org, user), this.ids.next(), T.CONTEXT + T.ACCESS);
@@ -44,3 +53,5 @@ export class RedisPermissionContextStore extends PermissionContextStore {
   }
 }
 const INITIAL_VERSION = '0';
+
+const SEPARATOR = '|';

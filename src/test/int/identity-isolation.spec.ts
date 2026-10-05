@@ -86,6 +86,10 @@ it('reflects organization methods; only the explicitly addressed organization is
         .withManager((m) => m.query('DELETE FROM organizations WHERE id=$1', [created.id]));
       expect(created.id).not.toBe(org);
     },
+    update: async () => {
+      await repo.update(org, { name: 'Scoped organization update' });
+      expect((await repo.get(b.me.organization.id))?.name).not.toBe('Scoped organization update');
+    },
     activate: async () => {
       await repo.activate(randomUUID());
       expect((await repo.get(org))?.isActive).toBe(true);

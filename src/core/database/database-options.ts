@@ -17,7 +17,11 @@ export function databaseOptions(config: AppConfig): DataSourceOptions {
     uuidExtension: 'pgcrypto',
     namingStrategy: new SnakeNamingStrategy(),
     entities: [join(__dirname, '../../modules/**/*.entity.{ts,js}')],
-    migrations: [EnablePgcrypto1790985600000, join(__dirname, 'migrations/*-identity.{ts,js}')],
+    migrations: [
+      EnablePgcrypto1790985600000,
+      join(__dirname, 'migrations/*-identity.{ts,js}'),
+      join(__dirname, 'migrations/*-properties.{ts,js}'),
+    ],
     extra: {
       max: config.get('DB_POOL_MAX'),
       statement_timeout: config.get('DB_STATEMENT_TIMEOUT_MS'),

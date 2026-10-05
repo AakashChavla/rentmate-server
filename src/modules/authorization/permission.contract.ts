@@ -7,10 +7,12 @@ export abstract class PermissionChecker {
   ): boolean;
 }
 export abstract class PermissionContextLoader {
+  public abstract invalidateOrganization(org: string): Promise<void>;
   public abstract load(org: string, user: string): Promise<PermissionContext>;
   public abstract invalidate(org: string, user: string): Promise<void>;
 }
 export abstract class PermissionContextStore {
+  public abstract invalidateOrganization(org: string): Promise<void>;
   public abstract version(org: string, user: string): Promise<string>;
   public abstract get(org: string, user: string): Promise<PermissionContext | null>;
   public abstract set(
@@ -27,7 +29,13 @@ export abstract class RoleRepository {
     org: string,
     user: string,
   ): Promise<{ roles: RoleAssignment[]; permissions: string[] }>;
-  public abstract assign(org: string, user: string, role: string): Promise<void>;
+  public abstract assign(
+    org: string,
+    user: string,
+    role: string,
+    scope?: string,
+    scopeId?: string,
+  ): Promise<void>;
   public abstract remove(org: string, user: string, assignment: string): Promise<void>;
   public abstract lockOwners(org: string): Promise<string[]>;
   public abstract roles(): Promise<string[]>;

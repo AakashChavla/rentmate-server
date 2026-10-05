@@ -1,3 +1,5 @@
+import { OrganizationPropertyDirectory } from '../organizations';
+import { ONBOARDING_STEP as STEP } from '../../shared/property.constants';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   PermissionContextLoader,
@@ -17,6 +19,8 @@ export class DefaultPermissionContextLoader extends PermissionContextLoader {
     @Inject(UserDirectory) private readonly users: UserDirectory,
     @Inject(OrganizationDirectory) private readonly organizations: OrganizationDirectory,
     @Inject(RoleRepository) private readonly roles: RoleRepository,
+    @Inject(OrganizationPropertyDirectory)
+    private readonly properties: OrganizationPropertyDirectory,
   ) {
     super();
   }
@@ -47,12 +51,15 @@ export class DefaultPermissionContextLoader extends PermissionContextLoader {
       isPlatformAdmin: user.isPlatformAdmin,
       onboarding: {
         steps: [
-          { key: 'verifyEmail', done: !!user.emailVerifiedAt },
-          { key: 'createProperty', done: false },
+          { key: STEP.EMAIL, done: !!user.emailVerifiedAt },
+          { key: STEP.PROPERTY, done: await this.properties.hasAny(org) },
         ],
       },
     };
     return context;
+  }
+  public override invalidateOrganization(org: string): Promise<void> {
+    return this.cache.invalidateOrganization(org);
   }
   public override invalidate(org: string, id: string): Promise<void> {
     return this.cache.invalidate(org, id);

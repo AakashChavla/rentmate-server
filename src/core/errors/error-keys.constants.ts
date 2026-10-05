@@ -1,5 +1,10 @@
 import { messageKey } from '../../shared/message-key';
 export const ERROR_KEYS = {
+  INVALID_PROPERTY_CONFIG: messageKey('errors.INVALID_PROPERTY_CONFIG'),
+  INVITE_INVALID: messageKey('errors.INVITE_INVALID'),
+  INVITE_EXPIRED: messageKey('errors.INVITE_EXPIRED'),
+  INVITE_USED: messageKey('errors.INVITE_USED'),
+  INVITE_DUPLICATE: messageKey('errors.INVITE_DUPLICATE'),
   VALIDATION_ERROR: messageKey('errors.VALIDATION_ERROR'),
   UNAUTHORIZED: messageKey('errors.UNAUTHORIZED'),
   FORBIDDEN: messageKey('errors.FORBIDDEN'),

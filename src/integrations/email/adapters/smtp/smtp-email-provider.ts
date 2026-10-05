@@ -1,3 +1,4 @@
+import { INVITE_TOKEN, INVITE_TTL } from '../../../../shared/property.constants';
 import { Inject, Injectable } from '@nestjs/common';
 import { createTransport } from 'nodemailer';
 import { createCipheriv, createDecipheriv, randomBytes, createHash } from 'node:crypto';
@@ -40,7 +41,8 @@ export class SmtpEmailProvider extends EmailProvider {
       iv: iv.toString('hex'),
       tag: cipher.getAuthTag().toString('hex'),
       data: data.toString('hex'),
-      expires: Date.now() + EMAIL_CRYPTO.TTL,
+      expires:
+        Date.now() + (email.purpose === INVITE_TOKEN.PURPOSE ? INVITE_TTL : EMAIL_CRYPTO.TTL),
     });
   }
   public override async deliver(payload: unknown): Promise<void> {
@@ -63,15 +65,7 @@ export class SmtpEmailProvider extends EmailProvider {
           transport.sendMail({
             from: this.config.get('EMAIL_FROM'),
             to: email.recipient,
-            subject: this.i18n.translate(messageKey('emails.auth.subject'), { lang: email.locale }),
-            text: this.i18n.translate(
-              email.purpose === OTP_PURPOSE.RESET
-                ? messageKey('emails.auth.passwordReset')
-                : email.code
-                  ? messageKey('emails.auth.otp')
-                  : messageKey('emails.auth.accountExists'),
-              { lang: email.locale, args: { code: email.code ?? '' } },
-            ),
+            ...this.content(email),
           }),
         {
           timeoutMs: EMAIL_CRYPTO.TIMEOUT,
@@ -84,6 +78,33 @@ export class SmtpEmailProvider extends EmailProvider {
     } finally {
       transport.close();
     }
+  }
+  private content(email: AuthEmail): { subject: string; text: string } {
+    return {
+      subject: this.i18n.translate(
+        email.purpose === INVITE_TOKEN.PURPOSE
+          ? messageKey('emails.invite.subject')
+          : messageKey('emails.auth.subject'),
+        { lang: email.locale },
+      ),
+      text: this.i18n.translate(
+        email.purpose === INVITE_TOKEN.PURPOSE
+          ? messageKey('emails.invite.body')
+          : email.purpose === OTP_PURPOSE.RESET
+            ? messageKey('emails.auth.passwordReset')
+            : email.code
+              ? messageKey('emails.auth.otp')
+              : messageKey('emails.auth.accountExists'),
+        {
+          lang: email.locale,
+          args: {
+            code: email.code ?? '',
+            url: email.inviteUrl ?? '',
+            organization: email.organizationName ?? '',
+          },
+        },
+      ),
+    };
   }
   private unseal(sealed: SealedEmail): AuthEmail {
     const decipher = createDecipheriv(

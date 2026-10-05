@@ -36,7 +36,7 @@ export function originCheck(
       [COOKIE_NAMES.ACCESS, COOKIE_NAMES.REFRESH, COOKIE_NAMES.SESSION].some((key) => cookies[key]);
     if (
       !HTTP_METHODS.SAFE.includes(request.method as (typeof HTTP_METHODS.SAFE)[number]) &&
-      (authenticated || request.path.startsWith(AUTH_PREFIX)) &&
+      (authenticated || PUBLIC_IDENTITY_PATHS.some((path) => request.path.startsWith(path))) &&
       !config.get('CORS_ORIGIN').includes(request.get(HEADER_NAMES.ORIGIN) ?? '')
     ) {
       next(new AppException(ErrorCode.CSRF_ORIGIN_MISMATCH));
@@ -72,5 +72,5 @@ export function atomicThrottle(
   };
 }
 const MILLISECONDS = 1000;
-const AUTH_PREFIX = '/api/v1/auth';
+const PUBLIC_IDENTITY_PATHS = ['/api/v1/auth', '/api/v1/invitations/accept'];
 export const THROTTLE_STATUS = HttpStatus.TOO_MANY_REQUESTS;

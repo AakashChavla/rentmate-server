@@ -15,6 +15,7 @@ export interface IdentityUser {
   createdAt: Date;
 }
 export interface OrganizationRecord {
+  settings?: Record<string, unknown>;
   id: string;
   name: string;
   slug: string;

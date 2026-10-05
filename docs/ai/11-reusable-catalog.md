@@ -22,4 +22,8 @@
 
 AuthService, SessionService/Verifier/Revoker, OtpService, LoginLockout, PermissionContextLoader/Store/Checker, UserDirectory/Repository/Service and OrganizationDirectory/Repository have abstract ports. Reuse AuthCookies, SecurityEventLogger, ExternalCallPolicy, ValidatedBody/Query, transaction afterCommit, repository reflection fixtures and scoped role batches. Argon2, jose, crypto OTP, SMTP, email blocklist and none-bot adapters are bound through root wiring.
 
-Client AuthProvider, AuthApi/UsersApi, PermissionGate/useCan/useHasPermission, AuthGuard/RequirePermission, safe-next/home routing, countdown/submission helpers, labeled OTP/identity fields and user filter/dialog components are reusable. Business-domain capabilities remain future phases.
+Client AuthProvider, AuthApi/UsersApi, PermissionGate/useCan/useHasPermission, AuthGuard/RequirePermission, safe-next/home routing, countdown/submission helpers, labeled OTP/identity fields and user filter/dialog components are reusable. Remaining business-domain capabilities arrive in later phases.
+
+## Phase 3 additions
+
+Reuse PropertyRepository/Service, OrganizationPropertyDirectory, InvitationRepository/Service/Policy and InvitationToken abstract ports. Preserve atomic JSONB configuration patches, organization cache versions, after-commit events, strict per-type Zod validation and composite scope constraints. Reuse PropertiesApi, OrganizationApi, InvitationsApi, PropertySelectionProvider, accessible-property queries, property wizard/config fields and TeamScopeFields. See [Phase 3 report](18-phase3-report.md).
