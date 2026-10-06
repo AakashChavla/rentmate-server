@@ -1,0 +1,190 @@
+{
+  "up": [
+    {
+      "query": "CREATE TYPE \"public\".\"unit_status\" AS ENUM('VACANT', 'OCCUPIED', 'RESERVED', 'MAINTENANCE', 'BLOCKED')",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"beds\" (\"id\" uuid NOT NULL DEFAULT gen_random_uuid(), \"created_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"updated_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"deleted_at\" TIMESTAMP WITH TIME ZONE, \"organization_id\" uuid NOT NULL, \"property_id\" uuid NOT NULL, \"unit_id\" uuid NOT NULL, \"label\" character varying(40) NOT NULL, \"status\" \"public\".\"unit_status\" NOT NULL DEFAULT 'VACANT', CONSTRAINT \"UQ_13ca899e73b572af15ea50fc3a2\" UNIQUE (\"organization_id\", \"unit_id\", \"label\"), CONSTRAINT \"PK_2212ae7113d85a70dc65983e742\" PRIMARY KEY (\"id\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_d91fccad185fc901411f50b38d\" ON \"beds\"  (\"organization_id\", \"unit_id\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_be406e8838202b24f85a475c05\" ON \"beds\"  (\"organization_id\", \"property_id\", \"status\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TYPE \"public\".\"unit_bulk_status\" AS ENUM('PENDING', 'RUNNING', 'COMPLETED', 'FAILED')",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"unit_bulk_jobs\" (\"id\" uuid NOT NULL DEFAULT gen_random_uuid(), \"created_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"updated_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"deleted_at\" TIMESTAMP WITH TIME ZONE, \"organization_id\" uuid NOT NULL, \"property_id\" uuid NOT NULL, \"requested_by\" uuid NOT NULL, \"pattern\" jsonb NOT NULL, \"status\" \"public\".\"unit_bulk_status\" NOT NULL DEFAULT 'PENDING', \"created_count\" integer NOT NULL DEFAULT '0', \"error_code\" character varying, CONSTRAINT \"PK_3fbbfd784c9bc866526baeb9799\" PRIMARY KEY (\"id\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_63b92303a505149394848229f3\" ON \"unit_bulk_jobs\"  (\"organization_id\", \"property_id\", \"created_at\", \"id\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"unit_configs\" (\"id\" uuid NOT NULL DEFAULT gen_random_uuid(), \"created_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"updated_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"deleted_at\" TIMESTAMP WITH TIME ZONE, \"organization_id\" uuid NOT NULL, \"property_id\" uuid NOT NULL, \"unit_id\" uuid NOT NULL, \"configuration\" jsonb NOT NULL, CONSTRAINT \"UQ_1bb533db965659a5871ee1eed86\" UNIQUE (\"organization_id\", \"unit_id\"), CONSTRAINT \"PK_84969cd12364433c3086a211f93\" PRIMARY KEY (\"id\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_9ef8338c59ff82c00350422c0e\" ON \"unit_configs\"  (\"organization_id\", \"property_id\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"floors\" (\"id\" uuid NOT NULL DEFAULT gen_random_uuid(), \"created_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"updated_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"deleted_at\" TIMESTAMP WITH TIME ZONE, \"organization_id\" uuid NOT NULL, \"property_id\" uuid NOT NULL, \"name\" character varying(100) NOT NULL, \"level\" integer NOT NULL, \"wing\" character varying(60) NOT NULL DEFAULT '', CONSTRAINT \"UQ_b44fdcab303640e6dcffcc53257\" UNIQUE (\"organization_id\", \"property_id\", \"level\", \"wing\"), CONSTRAINT \"UQ_0b275318cef88f33d7d67fc216b\" UNIQUE (\"organization_id\", \"property_id\", \"id\"), CONSTRAINT \"PK_dae78234002afa84842d3a08ee0\" PRIMARY KEY (\"id\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_46be575e8c159b08c211c67e21\" ON \"floors\"  (\"organization_id\", \"property_id\", \"created_at\", \"id\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TYPE \"public\".\"unit_type\" AS ENUM('ROOM', 'FLAT', 'SHOP')",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"units\" (\"id\" uuid NOT NULL DEFAULT gen_random_uuid(), \"created_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"updated_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"deleted_at\" TIMESTAMP WITH TIME ZONE, \"organization_id\" uuid NOT NULL, \"property_id\" uuid NOT NULL, \"floor_id\" uuid, \"code\" character varying(40) NOT NULL, \"type\" \"public\".\"unit_type\" NOT NULL, \"status\" \"public\".\"unit_status\" NOT NULL DEFAULT 'VACANT', \"base_rent\" numeric(12,2) NOT NULL, \"capacity\" integer NOT NULL DEFAULT '1', CONSTRAINT \"UQ_9c5593133b192dba914994e4388\" UNIQUE (\"property_id\", \"code\"), CONSTRAINT \"UQ_b35c61ec6af2be97c60ee8e4149\" UNIQUE (\"organization_id\", \"property_id\", \"id\"), CONSTRAINT \"CHK_ac01a41283ae5a07c1a610f62e\" CHECK (\"base_rent\">=0 AND \"capacity\">=1 AND \"capacity\"<=200), CONSTRAINT \"PK_5a8f2f064919b587d93936cb223\" PRIMARY KEY (\"id\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_4d60292e85f5e8196a9092467f\" ON \"units\"  (\"organization_id\", \"created_at\", \"id\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_0d68095b740e7ef6b13a1c1458\" ON \"units\"  (\"organization_id\", \"floor_id\", \"type\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_15cadd11335b27b97395f01b19\" ON \"units\"  (\"organization_id\", \"property_id\", \"status\") ",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"beds\" ADD CONSTRAINT \"FK_7c3750952f2c6013cd152ddfe9e\" FOREIGN KEY (\"unit_id\", \"organization_id\", \"property_id\") REFERENCES \"units\"(\"id\",\"organization_id\",\"property_id\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"unit_bulk_jobs\" ADD CONSTRAINT \"FK_1fca7f31c827ddc25f82948dc1d\" FOREIGN KEY (\"property_id\", \"organization_id\") REFERENCES \"properties\"(\"id\",\"organization_id\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"unit_bulk_jobs\" ADD CONSTRAINT \"FK_c7597a40aae9c164081ba8f4aed\" FOREIGN KEY (\"requested_by\", \"organization_id\") REFERENCES \"users\"(\"id\",\"organization_id\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"unit_configs\" ADD CONSTRAINT \"FK_f442f40976a490109367a66b07b\" FOREIGN KEY (\"unit_id\", \"organization_id\", \"property_id\") REFERENCES \"units\"(\"id\",\"organization_id\",\"property_id\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"floors\" ADD CONSTRAINT \"FK_dd2cb470e7339aea037d3ec41a3\" FOREIGN KEY (\"property_id\", \"organization_id\") REFERENCES \"properties\"(\"id\",\"organization_id\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"units\" ADD CONSTRAINT \"FK_b71bb7eb69bb41c946b29df32dd\" FOREIGN KEY (\"property_id\", \"organization_id\") REFERENCES \"properties\"(\"id\",\"organization_id\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"units\" ADD CONSTRAINT \"FK_2afefcf6a5d07de3e08e387d12b\" FOREIGN KEY (\"floor_id\", \"organization_id\", \"property_id\") REFERENCES \"floors\"(\"id\",\"organization_id\",\"property_id\") ON DELETE RESTRICT ON UPDATE NO ACTION",
+      "parameters": []
+    }
+  ],
+  "down": [
+    {
+      "query": "DROP TABLE \"beds\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_d91fccad185fc901411f50b38d\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_be406e8838202b24f85a475c05\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"unit_bulk_jobs\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_63b92303a505149394848229f3\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"unit_configs\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_9ef8338c59ff82c00350422c0e\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"floors\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_46be575e8c159b08c211c67e21\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"units\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_4d60292e85f5e8196a9092467f\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_0d68095b740e7ef6b13a1c1458\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_15cadd11335b27b97395f01b19\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"beds\" DROP CONSTRAINT \"FK_7c3750952f2c6013cd152ddfe9e\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"unit_bulk_jobs\" DROP CONSTRAINT \"FK_1fca7f31c827ddc25f82948dc1d\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"unit_bulk_jobs\" DROP CONSTRAINT \"FK_c7597a40aae9c164081ba8f4aed\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"unit_configs\" DROP CONSTRAINT \"FK_f442f40976a490109367a66b07b\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"floors\" DROP CONSTRAINT \"FK_dd2cb470e7339aea037d3ec41a3\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"units\" DROP CONSTRAINT \"FK_b71bb7eb69bb41c946b29df32dd\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"units\" DROP CONSTRAINT \"FK_2afefcf6a5d07de3e08e387d12b\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TYPE \"public\".\"unit_status\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TYPE \"public\".\"unit_bulk_status\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TYPE \"public\".\"unit_type\"",
+      "parameters": []
+    }
+  ]
+}

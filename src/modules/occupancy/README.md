@@ -1,3 +1,5 @@
-# occupancy
+# Occupancy read model (L1)
 
-Phase 1 placeholder. Implement this capability in its assigned vertical slice; expose index.ts contracts, inject abstract ports, and preserve tenant-scoped data access. No runtime provider or endpoint is registered yet.
+OccupancyReadModel and OccupancyStore are abstract ports. Each request checks property ownership and unit:read, including property grants, before reading cached data. Two aggregate SQL queries count live units and live beds with live parent units. Total includes all statuses, including maintenance and blocked; occupied means OCCUPIED. Empty totals yield zero percent. Percent is rounded to two decimal places. Unit and bed percentages remain independent until Phase 5 lease rules drive their statuses.
+
+Redis snapshots expire after two minutes. Versioned conditional writes reject stale aggregate results when a concurrent status or structure change invalidates the snapshot. Version keys include organization and property; missing versions use the key-value port's '0' convention. Invalidation occurs after commit and on unit.status_changed events. Query-count tests prove bounded unit lists and fewer SQL queries on a warm occupancy read. Tests use isolated PostgreSQL/Redis services.

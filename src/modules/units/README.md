@@ -1,3 +1,11 @@
-# units
+# Units (L1)
 
-Phase 1 placeholder. Implement this capability in its assigned vertical slice; expose index.ts contracts, inject abstract ports, and preserve tenant-scoped data access. No runtime provider or endpoint is registered yet.
+Floors, units, configuration and bulk creation use abstract service/repository ports bound at the application root. Property ownership and unit permissions are checked through property and authorization contracts. Organization and property composite foreign keys enforce floor/unit ownership. Repository reflection tests cover all public methods.
+
+Rent is NUMERIC(12,2) and an exact decimal string at the HTTP boundary. Configuration validates amenity enum keys, unique amenities, decimal size strings and furnishing. Unit code is unique per property, including deleted units. Floor names are display labels; level and wing identify a floor. Beds are restricted to PG room units and cannot exceed capacity. Floors with units and occupied/reserved units or beds cannot be deleted. Soft deletion excludes records from lists and occupancy. Archived properties allow reads and reject mutations.
+
+UnitStateMachine implements explicit transitions and idempotent same-status requests. VACANT permits all statuses; OCCUPIED permits VACANT or MAINTENANCE; RESERVED permits VACANT, OCCUPIED, MAINTENANCE or BLOCKED; MAINTENANCE permits VACANT or BLOCKED; BLOCKED permits VACANT or MAINTENANCE. Illegal transitions and stale expectedStatus produce distinct 409 codes. Property locks serialize bulk, bed capacity and status writes. Future leases must call UnitsService.status inside the existing transaction and must not update status through repositories.
+
+Bulk patterns generate prefix + padded floor + '-' + padded sequence, starting at supplied floor/sequence. At most 100 units are created synchronously in one transaction. Larger requests, bounded at 10,000 units, persist a scoped job and publish to BullMQ after commit. Workers reload the requesting user's permissions, lock the job, and create all floors/units atomically. Duplicate patterns fail without partial units. Completed or failed job delivery is idempotent. The status endpoint requires property create permission. Queue delivery currently uses after-commit callbacks; a durable outbox is a future reliability requirement.
+
+unit.status_changed contains organizationId, propertyId, unitId (when relevant), optional bedId, previousStatus and status. Structural changes invalidate occupancy through unit.structure_changed. Events publish after commit.

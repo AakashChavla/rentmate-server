@@ -25,5 +25,12 @@
   "INVITE_INVALID": "This invitation link is invalid.",
   "INVITE_EXPIRED": "This invitation has expired. Ask for a new invitation.",
   "INVITE_USED": "This invitation is already used or revoked.",
-  "INVITE_DUPLICATE": "An account or pending invitation already exists for this email."
+  "INVITE_DUPLICATE": "An account or pending invitation already exists for this email.",
+  "illegalUnitTransition": "This status transition is not allowed.",
+  "staleUnitStatus": "The status changed. Refresh and try again.",
+  "unitInUse": "This floor, unit or bed is in use.",
+  "bedNotSupported": "Beds are supported only in PG/hostel rooms.",
+  "bedCapacityExceeded": "The unit capacity would be exceeded.",
+  "duplicateUnitCode": "A unit with this code already exists.",
+  "invalidUnitConfig": "The unit configuration is invalid."
 }

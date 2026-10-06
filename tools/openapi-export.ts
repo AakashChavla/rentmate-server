@@ -11,7 +11,7 @@ async function exportOpenApi(): Promise<void> {
   process.env.REDIS_URL ??= 'redis://localhost:6379';
   for (const key of ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'OTP_HMAC_SECRET'])
     process.env[key] ??= randomBytes(32).toString('hex');
-  const app = await NestFactory.create(AppModule, { logger: false });
+  const app = await NestFactory.create(AppModule, { logger: false, abortOnError: false });
   try {
     app.setGlobalPrefix(ROUTES.PREFIX, {
       exclude: [

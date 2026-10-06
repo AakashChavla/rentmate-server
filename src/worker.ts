@@ -1,3 +1,4 @@
+import { BulkUnitsJob } from './modules/units';
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { Logger } from 'nestjs-pino';
@@ -16,6 +17,7 @@ async function startWorker(): Promise<void> {
   app.useLogger(app.get(Logger));
   await connectInfrastructure(app);
   app.get(WorkerHost).register(QUEUE_NAMES.EMAIL, app.get(EmailJob));
+  app.get(WorkerHost).register(QUEUE_NAMES.UNITS_BULK, app.get(BulkUnitsJob));
   app.get(WorkerHost).register(QUEUE_NAMES.REGISTRATION_CLEANUP, app.get(RegistrationCleanup));
   await app
     .get(QueuePublisher)

@@ -21,6 +21,7 @@ export function databaseOptions(config: AppConfig): DataSourceOptions {
       EnablePgcrypto1790985600000,
       join(__dirname, 'migrations/*-identity.{ts,js}'),
       join(__dirname, 'migrations/*-properties.{ts,js}'),
+      join(__dirname, 'migrations/*-units.{ts,js}'),
     ],
     extra: {
       max: config.get('DB_POOL_MAX'),

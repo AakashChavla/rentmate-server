@@ -1,6 +1,12 @@
 # Roadmap and status
 
-## Phase 3 — current implementation and Phase 4 prerequisites
+## Phase 4 — units, beds and occupancy; Phase 5 prerequisites
+
+Floors, units, PG beds, validated configuration, bulk creation, property-scoped authorization and cached occupancy are implemented. See [Phase 4 report](19-phase4-report.md). Monetary amounts are NUMERIC(12,2) and decimal strings. Unit and bed status transitions are explicit; illegal or stale changes return distinct 409 codes. Organization-leading composite constraints and reflection tests cover every new repository method. Units lists use bounded SQL queries. Bulk creation is transactional; requests above 100 units use a scoped BullMQ job. The client provides grouped status tiles, management forms, bulk previews, status rollback and accessible lazy occupancy charts in English/Hindi.
+
+Before Phase 5, define lease lifecycle and dates, PG bed-to-room occupancy propagation, reservation cancellation, deposits, proration, billing/GST and archive/end-of-lease rules. Unit/bed counts are currently independent: occupied means OCCUPIED, total includes all live statuses, empty total means zero percent. Leases must call UnitsService.status or BedsService.status in the existing transaction; never write status directly or derive authority from the property cookie. Retain property scope, composite ownership and decimal strings. Add lease-driven event/cache tests and preserve all existing isolated fixtures. After-commit delivery is not a durable outbox. Apply migrations before API/workers and preserve legacy PostgreSQL volumes.
+
+## Phase 3 — historical implementation and Phase 4 prerequisites
 
 Organizations, properties and scoped invitations are implemented and locally verified. See [Phase 3 report](18-phase3-report.md) for authorization, lifecycle, schema and test evidence. PostCSS is now 8.5.29; other stable pins and compiler peer exceptions remain as recorded below.
 

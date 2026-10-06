@@ -1,2 +1,2 @@
 corepack yarn rules:check
-corepack yarn lint-staged
+corepack yarn lint-staged --max-arg-length 4096

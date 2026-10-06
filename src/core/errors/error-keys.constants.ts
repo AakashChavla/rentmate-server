@@ -1,5 +1,13 @@
+import { ErrorCode } from './error-code.constants';
 import { messageKey } from '../../shared/message-key';
 export const ERROR_KEYS = {
+  [ErrorCode.INVALID_UNIT_CONFIG]: messageKey('errors.invalidUnitConfig'),
+  [ErrorCode.DUPLICATE_UNIT_CODE]: messageKey('errors.duplicateUnitCode'),
+  [ErrorCode.BED_CAPACITY_EXCEEDED]: messageKey('errors.bedCapacityExceeded'),
+  [ErrorCode.BED_NOT_SUPPORTED]: messageKey('errors.bedNotSupported'),
+  [ErrorCode.UNIT_IN_USE]: messageKey('errors.unitInUse'),
+  [ErrorCode.STALE_UNIT_STATUS]: messageKey('errors.staleUnitStatus'),
+  [ErrorCode.ILLEGAL_UNIT_TRANSITION]: messageKey('errors.illegalUnitTransition'),
   INVALID_PROPERTY_CONFIG: messageKey('errors.INVALID_PROPERTY_CONFIG'),
   INVITE_INVALID: messageKey('errors.INVITE_INVALID'),
   INVITE_EXPIRED: messageKey('errors.INVITE_EXPIRED'),

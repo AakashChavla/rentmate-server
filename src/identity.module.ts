@@ -1,3 +1,36 @@
+import { FloorRepository } from './modules/units';
+import { TypeOrmFloorRepository } from './modules/units/typeorm-floor.repository';
+import { UnitRepository } from './modules/units';
+import { TypeOrmUnitRepository } from './modules/units/typeorm-unit.repository';
+import { UnitPolicy } from './modules/units';
+import { DefaultUnitPolicy } from './modules/units/default-unit-policy.service';
+import { UnitEffects } from './modules/units';
+import { DefaultUnitEffects } from './modules/units/default-unit-effects.service';
+import { FloorsService } from './modules/units';
+import { DefaultFloorsService } from './modules/units/default-floors.service';
+import { UnitsService } from './modules/units';
+import { DefaultUnitsService } from './modules/units/default-units.service';
+import { BulkUnitWriter } from './modules/units';
+import { DefaultBulkUnitWriter } from './modules/units/default-bulk-unit-writer.service';
+import { BulkJobRepository } from './modules/units';
+import { TypeOrmBulkJobRepository } from './modules/units/typeorm-bulk-job.repository';
+import { BulkUnitsService } from './modules/units';
+import { DefaultBulkUnitsService } from './modules/units/default-bulk-units.service';
+import { BulkUnitsJob } from './modules/units';
+import { DefaultBulkUnitsJob } from './modules/units/default-bulk-units.processor';
+import { BedRepository } from './modules/beds';
+import { TypeOrmBedRepository } from './modules/beds/typeorm-bed.repository';
+import { BedsService } from './modules/beds';
+import { DefaultBedsService } from './modules/beds/default-beds.service';
+import { OccupancyStore } from './modules/occupancy';
+import { RedisOccupancyStore } from './modules/occupancy/redis-occupancy.store';
+import { OccupancyReadModel } from './modules/occupancy';
+import { DefaultOccupancyReadModel } from './modules/occupancy/default-occupancy-read-model.service';
+import { FloorsController } from './modules/units/floors.controller';
+import { UnitsController } from './modules/units/units.controller';
+import { BulkUnitsController } from './modules/units/bulk-units.controller';
+import { BedsController } from './modules/beds/beds.controller';
+import { OccupancyController } from './modules/occupancy/occupancy.controller';
 import {
   OrganizationService,
   OrganizationPropertyDirectory,
@@ -73,6 +106,11 @@ import { DefaultEmailJob } from './integrations/email/default-email-job';
 @Module({
   imports: [CoreModule],
   controllers: [
+    FloorsController,
+    UnitsController,
+    BulkUnitsController,
+    BedsController,
+    OccupancyController,
     AuthController,
     UsersController,
     RolesController,
@@ -81,6 +119,20 @@ import { DefaultEmailJob } from './integrations/email/default-email-job';
     InvitationsController,
   ],
   providers: [
+    { provide: FloorRepository, useClass: TypeOrmFloorRepository },
+    { provide: UnitRepository, useClass: TypeOrmUnitRepository },
+    { provide: UnitPolicy, useClass: DefaultUnitPolicy },
+    { provide: UnitEffects, useClass: DefaultUnitEffects },
+    { provide: FloorsService, useClass: DefaultFloorsService },
+    { provide: UnitsService, useClass: DefaultUnitsService },
+    { provide: BulkUnitWriter, useClass: DefaultBulkUnitWriter },
+    { provide: BulkJobRepository, useClass: TypeOrmBulkJobRepository },
+    { provide: BulkUnitsService, useClass: DefaultBulkUnitsService },
+    { provide: BulkUnitsJob, useClass: DefaultBulkUnitsJob },
+    { provide: BedRepository, useClass: TypeOrmBedRepository },
+    { provide: BedsService, useClass: DefaultBedsService },
+    { provide: OccupancyStore, useClass: RedisOccupancyStore },
+    { provide: OccupancyReadModel, useClass: DefaultOccupancyReadModel },
     { provide: OrganizationService, useClass: DefaultOrganizationService },
     { provide: OrganizationPropertyDirectory, useClass: TypeOrmPropertyRepository },
     { provide: PropertyRepository, useClass: TypeOrmPropertyRepository },
@@ -119,6 +171,20 @@ import { DefaultEmailJob } from './integrations/email/default-email-job';
     { provide: APP_GUARD, useClass: JwtAuthGuard },
   ],
   exports: [
+    FloorRepository,
+    UnitRepository,
+    UnitPolicy,
+    UnitEffects,
+    FloorsService,
+    UnitsService,
+    BulkUnitWriter,
+    BulkJobRepository,
+    BulkUnitsService,
+    BulkUnitsJob,
+    BedRepository,
+    BedsService,
+    OccupancyStore,
+    OccupancyReadModel,
     PropertyRepository,
     PropertiesService,
     InvitationRepository,

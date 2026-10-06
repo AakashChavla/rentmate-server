@@ -1,6 +1,13 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { ErrorCode } from './error-code.constants';
 const STATUS_BY_CODE: Partial<Record<ErrorCode, number>> = {
+  [ErrorCode.INVALID_UNIT_CONFIG]: HttpStatus.BAD_REQUEST,
+  [ErrorCode.DUPLICATE_UNIT_CODE]: HttpStatus.CONFLICT,
+  [ErrorCode.BED_CAPACITY_EXCEEDED]: HttpStatus.CONFLICT,
+  [ErrorCode.BED_NOT_SUPPORTED]: HttpStatus.BAD_REQUEST,
+  [ErrorCode.UNIT_IN_USE]: HttpStatus.CONFLICT,
+  [ErrorCode.STALE_UNIT_STATUS]: HttpStatus.CONFLICT,
+  [ErrorCode.ILLEGAL_UNIT_TRANSITION]: HttpStatus.CONFLICT,
   [ErrorCode.INVALID_PROPERTY_CONFIG]: HttpStatus.BAD_REQUEST,
   [ErrorCode.INVITE_INVALID]: HttpStatus.BAD_REQUEST,
   [ErrorCode.INVITE_EXPIRED]: HttpStatus.GONE,
