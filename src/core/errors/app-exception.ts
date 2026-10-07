@@ -1,6 +1,12 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { ErrorCode } from './error-code.constants';
 const STATUS_BY_CODE: Partial<Record<ErrorCode, number>> = {
+  [ErrorCode.LEASE_OVERLAP]: HttpStatus.CONFLICT,
+  [ErrorCode.ILLEGAL_LEASE_TRANSITION]: HttpStatus.CONFLICT,
+  [ErrorCode.TENANT_KYC_REQUIRED]: HttpStatus.CONFLICT,
+  [ErrorCode.DOCUMENT_MIME_INVALID]: HttpStatus.BAD_REQUEST,
+  [ErrorCode.DOCUMENT_TOO_LARGE]: HttpStatus.PAYLOAD_TOO_LARGE,
+  [ErrorCode.DOCUMENT_URL_EXPIRED]: HttpStatus.GONE,
   [ErrorCode.INVALID_UNIT_CONFIG]: HttpStatus.BAD_REQUEST,
   [ErrorCode.DUPLICATE_UNIT_CODE]: HttpStatus.CONFLICT,
   [ErrorCode.BED_CAPACITY_EXCEEDED]: HttpStatus.CONFLICT,

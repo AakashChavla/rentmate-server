@@ -1,3 +1,4 @@
+import { TenantInvitationLink } from './tenant-invitation-link.contract';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   InvitationRepository,
@@ -26,7 +27,7 @@ import {
   INVITE_TOKEN as T,
   DOMAIN_EVENT as E,
 } from '../../shared/property.constants';
-import { SCOPE, USER_STATUS, PASSWORD_POLICY } from '../../shared/identity.constants';
+import { SCOPE, USER_STATUS, PASSWORD_POLICY, ROLE } from '../../shared/identity.constants';
 import type { PermissionContext } from '../../shared/identity.types';
 import type { InviteInput, InviteRecord, InviteView } from '../../shared/property.types';
 import { invitationView } from './invitation-view';
@@ -50,6 +51,7 @@ export class DefaultInvitationsService extends InvitationsService {
     @Inject(Clock) private readonly clock: Clock,
     @Inject(AppConfig) private readonly config: AppConfig,
     @Inject(EventBus) private readonly events: EventBus,
+    @Inject(TenantInvitationLink) private readonly tenantLink: TenantInvitationLink,
   ) {
     super();
   }
@@ -184,6 +186,13 @@ export class DefaultInvitationsService extends InvitationsService {
       record.scopeType,
       record.scopeId,
     );
+    if (record.roleId === ROLE.TENANT)
+      await this.tenantLink.linkInvitation(
+        record.organizationId,
+        record.email,
+        record.propertyId,
+        user.id,
+      );
     await this.tx.afterCommit(async () => {
       await this.contexts.invalidate(record.organizationId, user.id);
       this.events.publish(E.ACCEPTED, {

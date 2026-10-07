@@ -1,4 +1,5 @@
 import { minutes } from './duration';
+export const READ_PERMISSION_SUFFIX = ':read';
 export const UNIT_STATUS = {
   VACANT: 'VACANT',
   OCCUPIED: 'OCCUPIED',

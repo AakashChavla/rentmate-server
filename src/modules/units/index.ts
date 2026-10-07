@@ -10,3 +10,7 @@ export {
 export { BulkJobRepository, BulkUnitsService, BulkUnitsJob } from './bulk.contract';
 export { UnitStateMachine } from './unit-state-machine';
 export { UnitStatusInputDto } from './units.dto';
+
+export { LeaseOccupancy } from './lease-occupancy.contract';
+
+export { UnitLeaseDirectory } from './unit-lease-directory.contract';

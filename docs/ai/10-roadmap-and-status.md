@@ -1,6 +1,10 @@
 # Roadmap and status
 
-## Phase 4 — units, beds and occupancy; Phase 5 prerequisites
+## Phase 5 — tenants, KYC and leases; Phase 6 prerequisites
+
+Tenant onboarding, private documents, tenant portal invitations, own-record authorization and lease lifecycle/occupancy flows are implemented. See [Phase 5 report](20-phase5-report.md) for booking constraints, date semantics, storage/encryption and verification evidence. Both full verification runs passed: 229 server tests and 66 client tests, plus builds. Before Phase 6, define invoice periods, proration, taxes/GST, credit notes, payment allocation/refunds and deposit accounting. Keep decimal money, linked tenant ownership and PROPERTY scope. A recorded deposit activates a lease but is not a financial ledger. Decide organization/property timezone billing and durable event delivery before financial automation.
+
+## Phase 4 — historical implementation and Phase 5 prerequisites
 
 Floors, units, PG beds, validated configuration, bulk creation, property-scoped authorization and cached occupancy are implemented. See [Phase 4 report](19-phase4-report.md). Monetary amounts are NUMERIC(12,2) and decimal strings. Unit and bed status transitions are explicit; illegal or stale changes return distinct 409 codes. Organization-leading composite constraints and reflection tests cover every new repository method. Units lists use bounded SQL queries. Bulk creation is transactional; requests above 100 units use a scoped BullMQ job. The client provides grouped status tiles, management forms, bulk previews, status rollback and accessible lazy occupancy charts in English/Hindi.
 

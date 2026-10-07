@@ -32,5 +32,11 @@
   "bedNotSupported": "Beds are supported only in PG/hostel rooms.",
   "bedCapacityExceeded": "The unit capacity would be exceeded.",
   "duplicateUnitCode": "A unit with this code already exists.",
-  "invalidUnitConfig": "The unit configuration is invalid."
+  "invalidUnitConfig": "The unit configuration is invalid.",
+  "LEASE_OVERLAP": "The unit or bed is already booked for these dates.",
+  "ILLEGAL_LEASE_TRANSITION": "This lease status change is not allowed.",
+  "TENANT_KYC_REQUIRED": "Verify the tenant and their documents first.",
+  "DOCUMENT_MIME_INVALID": "Upload a valid PDF, JPEG or PNG file.",
+  "DOCUMENT_TOO_LARGE": "The document exceeds the 10 MB limit.",
+  "DOCUMENT_URL_EXPIRED": "The document link has expired. Request a new link."
 }

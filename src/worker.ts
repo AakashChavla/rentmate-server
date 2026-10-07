@@ -1,3 +1,5 @@
+import { LeaseExpiryJob } from './modules/leases';
+import { LEASE_JOB, LEASE_LIMIT } from './shared/lease.constants';
 import { BulkUnitsJob } from './modules/units';
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
@@ -16,6 +18,10 @@ async function startWorker(): Promise<void> {
   const app = await NestFactory.createApplicationContext(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
   await connectInfrastructure(app);
+  app.get(WorkerHost).register(QUEUE_NAMES.LEASE_EXPIRY, app.get(LeaseExpiryJob));
+  await app
+    .get(QueuePublisher)
+    .schedule(QUEUE_NAMES.LEASE_EXPIRY, LEASE_JOB, LEASE_LIMIT.SCHEDULER_MS);
   app.get(WorkerHost).register(QUEUE_NAMES.EMAIL, app.get(EmailJob));
   app.get(WorkerHost).register(QUEUE_NAMES.UNITS_BULK, app.get(BulkUnitsJob));
   app.get(WorkerHost).register(QUEUE_NAMES.REGISTRATION_CLEANUP, app.get(RegistrationCleanup));

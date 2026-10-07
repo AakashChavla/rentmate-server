@@ -1,10 +1,15 @@
+import { UnitLeaseDirectory } from './unit-lease-directory.contract';
 import { definedFields } from './defined-fields';
 import { Inject, Injectable } from '@nestjs/common';
 import { UnitRepository, UnitsService, UnitPolicy, UnitEffects } from './units.contract';
 import { TransactionRunner } from '../../core/database/transaction-runner.contract';
 import { AppException } from '../../core/errors/app-exception';
 import { ErrorCode } from '../../core/errors/error-code.constants';
-import { UNIT_PERMISSION as P, UNIT_TYPE as T } from '../../shared/unit.constants';
+import {
+  UNIT_PERMISSION as P,
+  UNIT_TYPE as T,
+  UNIT_STATUS as S,
+} from '../../shared/unit.constants';
 import type { PermissionContext } from '../../shared/identity.types';
 import type {
   UnitInput,
@@ -25,6 +30,7 @@ export class DefaultUnitsService extends UnitsService {
     @Inject(UnitPolicy) private readonly policy: UnitPolicy,
     @Inject(UnitEffects) private readonly effects: UnitEffects,
     @Inject(TransactionRunner) private readonly tx: TransactionRunner,
+    @Inject(UnitLeaseDirectory) private readonly leases: UnitLeaseDirectory,
   ) {
     super();
   }
@@ -127,6 +133,8 @@ export class DefaultUnitsService extends UnitsService {
       await this.policy.property(actor, unit.propertyId, P.UPDATE);
       const current = await this.repo.lock(org, id);
       if (!current) throw new AppException(ErrorCode.NOT_FOUND);
+      if (input.status !== S.OCCUPIED && (await this.leases.protectedTarget(org, id)))
+        throw new AppException(ErrorCode.UNIT_IN_USE);
       const status = new UnitStateMachine().transition(current.status, input);
       await this.repo.setStatus(org, id, status);
       await this.effects.changed({

@@ -37,6 +37,16 @@ services:
       JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?Generate JWT_ACCESS_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?Generate JWT_REFRESH_SECRET}
       OTP_HMAC_SECRET: ${OTP_HMAC_SECRET:?Generate OTP_HMAC_SECRET}
+      FIELD_KEY_ID: ${FIELD_KEY_ID:-dev-v1}
+      FIELD_KEYS: ${FIELD_KEYS:?Generate FIELD_KEYS for encrypted tenant ID numbers}
+      FIELD_HASH_KEY: ${FIELD_HASH_KEY:?Generate FIELD_HASH_KEY}
+      FILE_STORAGE: ${FILE_STORAGE:-local}
+      FILE_LOCAL_PATH: /app/.rentmate-private/documents
+      S3_REGION: ${S3_REGION:-ap-south-1}
+      S3_BUCKET: ${S3_BUCKET:-}
+      S3_ENDPOINT: ${S3_ENDPOINT:-}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:-}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:-}
       SMTP_HOST: ${SMTP_HOST:-host.docker.internal}
       SMTP_PORT: ${SMTP_PORT:-1025}
       SMTP_SECURE: ${SMTP_SECURE:-false}
@@ -53,6 +63,7 @@ services:
     build: { context: ., target: dev }
     command: yarn dev
     environment: *platform-env
+    volumes: [private-documents:/app/.rentmate-private]
     depends_on:
       migrate: { condition: service_completed_successfully }
     expose: ['3000']
@@ -77,8 +88,14 @@ services:
     build: { context: ., target: dev }
     command: yarn worker:dev
     environment: *platform-env
+    volumes:
+      - type: volume
+        source: private-documents
+        target: /app/.rentmate-private
+        volume: { nocopy: true }
     depends_on:
       migrate: { condition: service_completed_successfully }
 volumes:
+  private-documents:
   postgres18-data:
   redis-data:

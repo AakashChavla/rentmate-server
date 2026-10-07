@@ -1,0 +1,35 @@
+# Phase 5 — tenants, private KYC documents and leases
+
+Implemented on phase/5-tenants-leases from the Phase 4 branch. Server contract is exported before client type generation. Local commits are authorized; no push.
+
+## Contract and boundaries
+
+L2 tenant/document services and L3 lease services inject abstract ports. TenantPolicy centralizes property and own-record authorization. TENANT assignments require both linked ownership and the granted property scope for lists, reads and profile/document writes; staff verification and lease mutations are forbidden to tenant users. Phase 3 invitation acceptance links matching tenant email/property inside its transaction. KycDocumentDirectory and UnitLeaseDirectory keep cross-module dependencies acyclic and below the owning layer. API responses whitelist fields; ID ciphertext/HMAC, document keys and checksums never appear in response DTOs.
+
+Tenant creation, profile edits, KYC upload/review, portal invitations, lease list/detail/availability/create/deposit/renew/terminate and private downloads are implemented. Signed local downloads also require authenticated record access. ID fields use AES-256-GCM with a version/key ID, random IV and authenticated envelope; a separate HMAC key supports searchable identity hashes. Masked responses expose only the last four characters. No sample real identity data is stored in fixtures.
+
+FileStorage selects local disk or S3-compatible adapters. Objects have random keys; local files/directories use private permissions. Uploads stream to a bounded staging file, check PDF/JPEG/PNG magic bytes against declared MIME, compute SHA-256 and invoke AntivirusScanner. The requested none scanner is a development adapter, not a claim of malware protection. The cap is 10 MiB and URLs expire after two minutes. S3 requires a private bucket and HTTPS; its connection resolver rejects private/reserved addresses, including metadata/loopback destinations. Credentials and IDs are redacted from logs.
+
+## Booking and lifecycle decisions
+
+Money remains NUMERIC(12,2) and fixed decimal strings. Lease date ranges use [start,end), so adjacent leases can share the boundary date. Two btree_gist exclusion constraints reject overlapping live target/date ranges. The second compares an injective UUID numeric slot for each bed against an unbounded whole-unit slot, so whole-unit versus bed overlap is also impossible across competing repeatable-read snapshots. A trigger locks the unit and checks live targets. Services pre-check conflicts and map database 23P01 to localized LEASE_OVERLAP. Property locks serialize occupancy changes with unit/bed administration.
+
+Deposit recording activates the lease and target occupancy, with matching references treated idempotently. Renewal creates a successor and records the predecessor as RENEWED. A renewed predecessor continues to block its date range and hold occupancy until its end date; otherwise future renewal would prematurely release the current booking. EXPIRED and TERMINATED are terminal booking statuses. Termination releases occupancy only when no other activated booking still uses the target. PG room occupancy aggregates its occupied beds. Manual vacant status/deletion is refused for a protected lease target.
+
+The hourly BullMQ lease.expiry-check scheduler has a stable ID. A PostgreSQL transaction advisory lock permits one sweep instance; bounded batches and state checks make retries idempotent. Expiry marks active leases EXPIRING within 30 days and eligible ended leases EXPIRED. Lease dates/expiry currently use UTC calendar dates. Unit status/cache events are delivered after commit; this is not a durable outbox.
+
+## Validation record
+
+Focused HTTP suites prove KYC onboarding, masked/encrypted identities, signed URL authorization/expiry, MIME spoof rejection, deposit/renewal/termination, expiry idempotency, tenant invitation/login/own access, organization isolation, concurrent target overlap and PG occupancy. Reflection cases cover every public tenant/document/lease repository operation; the worker-only due projection contains only organization and lease IDs. Fixture cleanup removes fixture tenant records before its organizations without touching application data.
+
+Full yarn verify passed: lint, strict TypeScript, architecture, rules/auth-scope/localization gates, 153 unit tests, 54 HTTP tests, build and 22 integration tests. Client verification passed with 66 tests and a production build. Custom gate proofs rejected all configured violations and removed their fixtures; generators were exercised with --help. A direct SQL repeatable-read race proved only one whole-unit/bed booking commits. The fixture uses an isolated Compose project on Postgres 25432 and Redis 26379. All migrations applied to a fresh isolated database and the entity/schema diff was empty. No existing application database/volume has been reset.
+
+Local Compose migration, API and worker start successfully. Readiness, Swagger and client login smoke checks returned 200; the client runs concurrently on http://127.0.0.1:3001 with API http://127.0.0.1:3000. Ignored local env files use Postgres 15432 and Redis 16379 to avoid reserved host ports. Existing credentials were preserved and independent development encryption/HMAC keys were generated without printing them. Private-volume directories were corrected to mode 700 under UID 1000. The worker mounts the shared volume with nocopy to avoid simultaneous volume initialization. External email delivery was not tested.
+
+Latest direct dependency checks retained Node 26.10.0, PostgreSQL 18.6, Redis 8.10.2 and the existing exact stable package pins. Added AWS S3 SDK/presigner 3.1146.0, busboy 1.6.0 and its types 1.5.4. Compiler compatibility exceptions remain documented in [stable upgrade report](16-stable-upgrade-report.md). Release sources: [Node](https://nodejs.org/dist/index.json), [PostgreSQL](https://www.postgresql.org/docs/release/), [Redis](https://github.com/redis/redis/releases/tag/8.10.2). Range semantics follow [PostgreSQL range documentation](https://www.postgresql.org/docs/current/rangetypes.html).
+
+External S3 credentials/bucket, a production malware scanner, remote CI/CodeQL/Gitleaks and production deployment have not been verified. Refreshed audits report high braces findings in both repos and moderate glob deprecation/sprintf-js findings on the server; these remain release blockers, with no suppression. Assistant-authored Hindi requires human review.
+
+## Phase 6 prerequisites
+
+Define invoice periods, proration, tax/GST, credit notes, due dates, payment allocations, refunds and deposit accounting before billing migrations. Deposit references currently record lifecycle activation only; they are not a payment ledger. Reuse decimal money, tenant ownership and PROPERTY scope. Derive tenant invoice access through linked user identity, never browser-selected IDs. Add transactional invoice/payment idempotency and concurrency constraints. Decide organization/property timezone billing rules and durable event delivery before financial automation.

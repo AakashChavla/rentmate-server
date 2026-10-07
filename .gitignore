@@ -12,3 +12,5 @@ docs/proof-fixtures/
 *.log
 
 .yarn/
+
+.rentmate-private/

@@ -55,4 +55,10 @@ export type I18nKey =
   | 'errors.bedCapacityExceeded'
   | 'errors.duplicateUnitCode'
   | 'errors.invalidUnitConfig'
+  | 'errors.LEASE_OVERLAP'
+  | 'errors.ILLEGAL_LEASE_TRANSITION'
+  | 'errors.TENANT_KYC_REQUIRED'
+  | 'errors.DOCUMENT_MIME_INVALID'
+  | 'errors.DOCUMENT_TOO_LARGE'
+  | 'errors.DOCUMENT_URL_EXPIRED'
   | 'validation.invalid';

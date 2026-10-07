@@ -1,0 +1,249 @@
+{
+  "up": [
+    {
+      "query": "CREATE TYPE \"public\".\"tenant_document_type\" AS ENUM('AADHAAR', 'PAN', 'PASSPORT', 'PHOTO', 'OTHER')",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TYPE \"public\".\"tenant_document_status\" AS ENUM('PENDING', 'VERIFIED', 'REJECTED')",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"tenant_documents\" (\"id\" uuid NOT NULL DEFAULT gen_random_uuid(), \"created_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"updated_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"deleted_at\" TIMESTAMP WITH TIME ZONE, \"organization_id\" uuid NOT NULL, \"property_id\" uuid NOT NULL, \"tenant_id\" uuid NOT NULL, \"type\" \"public\".\"tenant_document_type\" NOT NULL, \"storage_key\" text NOT NULL, \"mime\" character varying NOT NULL, \"size\" integer NOT NULL, \"checksum\" character varying NOT NULL, \"status\" \"public\".\"tenant_document_status\" NOT NULL DEFAULT 'PENDING', \"reviewed_by\" uuid, \"review_reason\" text, CONSTRAINT \"UQ_66ec025e0d85e2fbfe815a39fab\" UNIQUE (\"organization_id\", \"id\"), CONSTRAINT \"PK_9790c9cdb14cfc71b69a5dd5506\" PRIMARY KEY (\"id\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_e8e4e9d667cbca52d50f510f43\" ON \"tenant_documents\"  (\"organization_id\", \"tenant_id\", \"status\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TYPE \"public\".\"lease_status\" AS ENUM('PENDING_DEPOSIT', 'ACTIVE', 'EXPIRING', 'EXPIRED', 'RENEWED', 'TERMINATED')",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"leases\" (\"id\" uuid NOT NULL DEFAULT gen_random_uuid(), \"created_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"updated_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"deleted_at\" TIMESTAMP WITH TIME ZONE, \"organization_id\" uuid NOT NULL, \"property_id\" uuid NOT NULL, \"tenant_id\" uuid NOT NULL, \"unit_id\" uuid NOT NULL, \"bed_id\" uuid, \"start_date\" date NOT NULL, \"end_date\" date NOT NULL, \"rent\" numeric(12,2) NOT NULL, \"deposit\" numeric(12,2) NOT NULL, \"due_day\" integer NOT NULL, \"status\" \"public\".\"lease_status\" NOT NULL DEFAULT 'PENDING_DEPOSIT', \"renewed_from_id\" uuid, \"terminated_at\" TIMESTAMP WITH TIME ZONE, \"terminate_reason\" text, \"deposit_recorded_at\" TIMESTAMP WITH TIME ZONE, \"deposit_reference\" text, CONSTRAINT \"UQ_56f221159d15848c6822e6aa84a\" UNIQUE (\"organization_id\", \"id\"), CONSTRAINT \"lease_dates_money\" CHECK (\"start_date\" < \"end_date\" AND \"rent\">=0 AND \"deposit\">=0 AND \"due_day\">=1 AND \"due_day\"<=28), CONSTRAINT \"lease_target_dates\" EXCLUDE USING gist (\"organization_id\" WITH =, (COALESCE(\"bed_id\",\"unit_id\")) WITH =, daterange(\"start_date\",\"end_date\",'[)') WITH &&) WHERE (\"status\" NOT IN ('EXPIRED','TERMINATED') AND \"deleted_at\" IS NULL), CONSTRAINT \"PK_2668e338ab2d27079170ea55ea2\" PRIMARY KEY (\"id\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_4ab914450b14ece0393500ee00\" ON \"leases\"  (\"organization_id\", \"created_at\", \"id\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_0b05861e5c1b0ecdc76e2f6a4b\" ON \"leases\"  (\"organization_id\", \"unit_id\", \"bed_id\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_30feaae235e1589cbb1bec7e70\" ON \"leases\"  (\"organization_id\", \"property_id\", \"status\", \"end_date\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_0791ed5acefbabd61bf2964edd\" ON \"leases\"  (\"organization_id\", \"tenant_id\", \"start_date\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"lease_members\" (\"id\" uuid NOT NULL DEFAULT gen_random_uuid(), \"created_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"updated_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"deleted_at\" TIMESTAMP WITH TIME ZONE, \"organization_id\" uuid NOT NULL, \"lease_id\" uuid NOT NULL, \"full_name\" character varying NOT NULL, CONSTRAINT \"PK_8424abf0229ee278e7962357e9a\" PRIMARY KEY (\"id\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_7c00dbd57ba4ce0c44d3a84f41\" ON \"lease_members\"  (\"organization_id\", \"lease_id\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TYPE \"public\".\"tenant_status\" AS ENUM('PENDING_KYC', 'VERIFIED', 'REJECTED', 'INACTIVE')",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TABLE \"tenants\" (\"id\" uuid NOT NULL DEFAULT gen_random_uuid(), \"created_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"updated_at\" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), \"deleted_at\" TIMESTAMP WITH TIME ZONE, \"organization_id\" uuid NOT NULL, \"property_id\" uuid NOT NULL, \"full_name\" character varying(200) NOT NULL, \"phone\" character varying(30) NOT NULL, \"email\" character varying(200) NOT NULL, \"status\" \"public\".\"tenant_status\" NOT NULL DEFAULT 'PENDING_KYC', \"user_id\" uuid, \"emergency_contact\" text, \"id_cipher\" text, \"id_hash\" character varying, \"id_last_four\" character varying, \"review_reason\" text, CONSTRAINT \"UQ_ba54b8b4c83e4f12473f0e25b8b\" UNIQUE (\"organization_id\", \"property_id\", \"id\"), CONSTRAINT \"UQ_c48850070eebc5e8552f56a0c7f\" UNIQUE (\"organization_id\", \"id\"), CONSTRAINT \"PK_53be67a04681c66b87ee27c9321\" PRIMARY KEY (\"id\"))",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_5420c8a006362c55d9e9f70733\" ON \"tenants\"  (\"organization_id\", \"created_at\", \"id\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_9ef4c7d8445a55cf339ce2aca1\" ON \"tenants\"  (\"organization_id\", \"id_hash\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_1674e5f63e16c688df254c20c5\" ON \"tenants\"  (\"organization_id\", \"user_id\") ",
+      "parameters": []
+    },
+    {
+      "query": "CREATE INDEX \"IDX_b1495893e142227d5729fc0f08\" ON \"tenants\"  (\"organization_id\", \"property_id\", \"status\") ",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"beds\" ADD CONSTRAINT \"UQ_4e8d2f0b5046c02b3fcffe9a911\" UNIQUE (\"organization_id\", \"unit_id\", \"id\")",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"tenant_documents\" ADD CONSTRAINT \"FK_4d8654dc097fcdc4ae72c08deaa\" FOREIGN KEY (\"tenant_id\", \"organization_id\", \"property_id\") REFERENCES \"tenants\"(\"id\",\"organization_id\",\"property_id\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"tenant_documents\" ADD CONSTRAINT \"FK_ba0acafa7210799202d600ff101\" FOREIGN KEY (\"reviewed_by\", \"organization_id\") REFERENCES \"users\"(\"id\",\"organization_id\") ON DELETE NO ACTION ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"leases\" ADD CONSTRAINT \"FK_0472664e8d1ab26879f7b641db2\" FOREIGN KEY (\"tenant_id\", \"organization_id\", \"property_id\") REFERENCES \"tenants\"(\"id\",\"organization_id\",\"property_id\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"leases\" ADD CONSTRAINT \"FK_92781b0781e61352cee1429efc3\" FOREIGN KEY (\"unit_id\", \"organization_id\", \"property_id\") REFERENCES \"units\"(\"id\",\"organization_id\",\"property_id\") ON DELETE NO ACTION ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"leases\" ADD CONSTRAINT \"FK_0b05861e5c1b0ecdc76e2f6a4ba\" FOREIGN KEY (\"bed_id\", \"organization_id\", \"unit_id\") REFERENCES \"beds\"(\"id\",\"organization_id\",\"unit_id\") ON DELETE NO ACTION ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"leases\" ADD CONSTRAINT \"FK_d7f4f6766af0b238590dcd60443\" FOREIGN KEY (\"renewed_from_id\", \"organization_id\") REFERENCES \"leases\"(\"id\",\"organization_id\") ON DELETE NO ACTION ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"lease_members\" ADD CONSTRAINT \"FK_7c00dbd57ba4ce0c44d3a84f415\" FOREIGN KEY (\"lease_id\", \"organization_id\") REFERENCES \"leases\"(\"id\",\"organization_id\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"tenants\" ADD CONSTRAINT \"FK_818274ae879a574efdc49569cad\" FOREIGN KEY (\"property_id\", \"organization_id\") REFERENCES \"properties\"(\"id\",\"organization_id\") ON DELETE CASCADE ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"tenants\" ADD CONSTRAINT \"FK_1674e5f63e16c688df254c20c56\" FOREIGN KEY (\"user_id\", \"organization_id\") REFERENCES \"users\"(\"id\",\"organization_id\") ON DELETE NO ACTION ON UPDATE NO ACTION",
+      "parameters": []
+    },
+    {
+      "query": "CREATE FUNCTION rentmate_lease_overlap_guard() RETURNS trigger LANGUAGE plpgsql AS $$\nBEGIN\n IF NEW.status IN ('EXPIRED','TERMINATED') OR NEW.deleted_at IS NOT NULL THEN RETURN NEW; END IF;\n PERFORM 1 FROM units WHERE organization_id=NEW.organization_id AND id=NEW.unit_id AND deleted_at IS NULL FOR UPDATE;\n IF NOT FOUND THEN RAISE EXCEPTION USING ERRCODE='23503',MESSAGE='Lease unit is unavailable'; END IF;\n IF EXISTS(SELECT 1 FROM leases l WHERE l.organization_id=NEW.organization_id AND l.unit_id=NEW.unit_id AND l.id<>NEW.id AND l.deleted_at IS NULL AND l.status NOT IN ('EXPIRED','TERMINATED') AND daterange(l.start_date,l.end_date,'[)') && daterange(NEW.start_date,NEW.end_date,'[)') AND (NEW.bed_id IS NULL OR l.bed_id IS NULL OR l.bed_id=NEW.bed_id)) THEN\n RAISE EXCEPTION USING ERRCODE='23P01',MESSAGE='Lease interval overlaps'; END IF;\n RETURN NEW;\nEND $$",
+      "parameters": []
+    },
+    {
+      "query": "CREATE TRIGGER lease_overlap_guard BEFORE INSERT OR UPDATE ON leases FOR EACH ROW EXECUTE FUNCTION rentmate_lease_overlap_guard()",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"leases\" ADD CONSTRAINT \"lease_unit_bed_dates\" EXCLUDE USING gist (\"organization_id\" WITH =, \"unit_id\" WITH =, numrange((('x'||substr(replace(\"bed_id\"::text,'-',''),1,16))::bit(64)::bigint)::numeric * 18446744073709551616 + (('x'||substr(replace(\"bed_id\"::text,'-',''),17,16))::bit(64)::bigint)::numeric,(('x'||substr(replace(\"bed_id\"::text,'-',''),1,16))::bit(64)::bigint)::numeric * 18446744073709551616 + (('x'||substr(replace(\"bed_id\"::text,'-',''),17,16))::bit(64)::bigint)::numeric,'[]') WITH &&, daterange(\"start_date\",\"end_date\",'[)') WITH &&) WHERE (\"status\" NOT IN ('EXPIRED','TERMINATED') AND \"deleted_at\" IS NULL)"
+    }
+  ],
+  "down": [
+    {
+      "query": "DROP TRIGGER IF EXISTS lease_overlap_guard ON leases",
+      "parameters": []
+    },
+    {
+      "query": "DROP FUNCTION IF EXISTS rentmate_lease_overlap_guard()",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"tenant_documents\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_e8e4e9d667cbca52d50f510f43\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"leases\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_4ab914450b14ece0393500ee00\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_0b05861e5c1b0ecdc76e2f6a4b\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_30feaae235e1589cbb1bec7e70\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_0791ed5acefbabd61bf2964edd\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"lease_members\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_7c00dbd57ba4ce0c44d3a84f41\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TABLE \"tenants\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_5420c8a006362c55d9e9f70733\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_9ef4c7d8445a55cf339ce2aca1\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_1674e5f63e16c688df254c20c5\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP INDEX \"public\".\"IDX_b1495893e142227d5729fc0f08\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"beds\" DROP CONSTRAINT \"UQ_4e8d2f0b5046c02b3fcffe9a911\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"tenant_documents\" DROP CONSTRAINT \"FK_4d8654dc097fcdc4ae72c08deaa\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"tenant_documents\" DROP CONSTRAINT \"FK_ba0acafa7210799202d600ff101\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"leases\" DROP CONSTRAINT \"FK_0472664e8d1ab26879f7b641db2\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"leases\" DROP CONSTRAINT \"FK_92781b0781e61352cee1429efc3\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"leases\" DROP CONSTRAINT \"FK_0b05861e5c1b0ecdc76e2f6a4ba\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"leases\" DROP CONSTRAINT \"FK_d7f4f6766af0b238590dcd60443\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"lease_members\" DROP CONSTRAINT \"FK_7c00dbd57ba4ce0c44d3a84f415\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"tenants\" DROP CONSTRAINT \"FK_818274ae879a574efdc49569cad\"",
+      "parameters": []
+    },
+    {
+      "query": "ALTER TABLE \"tenants\" DROP CONSTRAINT \"FK_1674e5f63e16c688df254c20c56\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TYPE \"public\".\"tenant_document_type\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TYPE \"public\".\"tenant_document_status\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TYPE \"public\".\"lease_status\"",
+      "parameters": []
+    },
+    {
+      "query": "DROP TYPE \"public\".\"tenant_status\"",
+      "parameters": []
+    }
+  ]
+}

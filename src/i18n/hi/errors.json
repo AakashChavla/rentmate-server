@@ -32,5 +32,11 @@
   "bedNotSupported": "बेड केवल पीजी/होस्टल के कमरों में उपलब्ध हैं।",
   "bedCapacityExceeded": "इकाई की क्षमता पार हो जाएगी।",
   "duplicateUnitCode": "इस कोड वाली इकाई पहले से मौजूद है।",
-  "invalidUnitConfig": "इकाई की सेटिंग अमान्य है।"
+  "invalidUnitConfig": "इकाई की सेटिंग अमान्य है।",
+  "LEASE_OVERLAP": "इन तारीखों के लिए यूनिट या बेड पहले से बुक है।",
+  "ILLEGAL_LEASE_TRANSITION": "लीज़ की स्थिति में यह बदलाव अनुमत नहीं है।",
+  "TENANT_KYC_REQUIRED": "पहले किरायेदार और उनके दस्तावेज़ सत्यापित करें।",
+  "DOCUMENT_MIME_INVALID": "मान्य PDF, JPEG या PNG फ़ाइल अपलोड करें।",
+  "DOCUMENT_TOO_LARGE": "दस्तावेज़ 10 MB सीमा से बड़ा है।",
+  "DOCUMENT_URL_EXPIRED": "दस्तावेज़ लिंक की अवधि समाप्त हो गई है। नया लिंक लें।"
 }

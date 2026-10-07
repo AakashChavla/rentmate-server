@@ -4,6 +4,7 @@ import { UNIT_STATUS as S, UNIT_LIMITS as L } from '../../shared/unit.constants'
 import type { UnitStatus } from '../../shared/unit.types';
 
 @Entity('beds')
+@Unique(['organizationId', 'unitId', 'id'])
 @Unique(['organizationId', 'unitId', 'label'])
 @Index(['organizationId', 'propertyId', 'status'])
 @Index(['organizationId', 'unitId'])

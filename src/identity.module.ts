@@ -1,3 +1,4 @@
+import { PHASE5_PROVIDERS, PHASE5_CONTROLLERS } from './phase5-bindings';
 import { FloorRepository } from './modules/units';
 import { TypeOrmFloorRepository } from './modules/units/typeorm-floor.repository';
 import { UnitRepository } from './modules/units';
@@ -106,6 +107,7 @@ import { DefaultEmailJob } from './integrations/email/default-email-job';
 @Module({
   imports: [CoreModule],
   controllers: [
+    ...PHASE5_CONTROLLERS,
     FloorsController,
     UnitsController,
     BulkUnitsController,
@@ -119,6 +121,7 @@ import { DefaultEmailJob } from './integrations/email/default-email-job';
     InvitationsController,
   ],
   providers: [
+    ...PHASE5_PROVIDERS,
     { provide: FloorRepository, useClass: TypeOrmFloorRepository },
     { provide: UnitRepository, useClass: TypeOrmUnitRepository },
     { provide: UnitPolicy, useClass: DefaultUnitPolicy },

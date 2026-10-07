@@ -1,6 +1,12 @@
 import { ErrorCode } from './error-code.constants';
 import { messageKey } from '../../shared/message-key';
 export const ERROR_KEYS = {
+  LEASE_OVERLAP: messageKey('errors.LEASE_OVERLAP'),
+  ILLEGAL_LEASE_TRANSITION: messageKey('errors.ILLEGAL_LEASE_TRANSITION'),
+  TENANT_KYC_REQUIRED: messageKey('errors.TENANT_KYC_REQUIRED'),
+  DOCUMENT_MIME_INVALID: messageKey('errors.DOCUMENT_MIME_INVALID'),
+  DOCUMENT_TOO_LARGE: messageKey('errors.DOCUMENT_TOO_LARGE'),
+  DOCUMENT_URL_EXPIRED: messageKey('errors.DOCUMENT_URL_EXPIRED'),
   [ErrorCode.INVALID_UNIT_CONFIG]: messageKey('errors.invalidUnitConfig'),
   [ErrorCode.DUPLICATE_UNIT_CODE]: messageKey('errors.duplicateUnitCode'),
   [ErrorCode.BED_CAPACITY_EXCEEDED]: messageKey('errors.bedCapacityExceeded'),

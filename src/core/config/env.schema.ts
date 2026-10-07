@@ -1,6 +1,8 @@
+import { STORAGE_KIND, FILE_LIMIT } from '../../shared/lease.constants';
 import { z } from 'zod';
 import { AUTH_ENV } from './auth-env.constants';
 import { CONFIG_DEFAULTS as D, ENVIRONMENT, LOG_LEVELS, BOOLEAN_VALUES } from './config.constants';
+import { ErrorCode } from '../errors/error-code.constants';
 const booleanValue = z
   .union([z.boolean(), z.enum(BOOLEAN_VALUES)])
   .transform((value) => value === true || value === BOOLEAN_VALUES[0]);
@@ -10,6 +12,36 @@ const secret = z
   .min(AUTH_ENV.SECRET_MIN)
   .refine((value) => !/change.?me|placeholder|example|your[_-]|replace.?me/i.test(value));
 const base = z.object({
+  FIELD_KEY_ID: z
+    .string()
+    .regex(/^[a-zA-Z0-9_-]+$/)
+    .default('dev-v1'),
+  FIELD_KEYS: z
+    .string()
+    .optional()
+    .transform((value, context) => {
+      if (!value) return undefined;
+      try {
+        return JSON.parse(value) as unknown;
+      } catch {
+        context.addIssue({ code: 'custom', message: ErrorCode.VALIDATION_ERROR });
+        return z.NEVER;
+      }
+    })
+    .pipe(z.record(z.string(), z.string().regex(/^[a-fA-F0-9]{64}$/)).optional()),
+  FIELD_HASH_KEY: z
+    .string()
+    .length(FILE_LIMIT.HEX_KEY)
+    .regex(/^[a-fA-F0-9]+$/)
+    .optional(),
+  FILE_STORAGE: z.enum([STORAGE_KIND.LOCAL, STORAGE_KIND.S3]).default(STORAGE_KIND.LOCAL),
+  FILE_LOCAL_PATH: z.string().default('.rentmate-private/documents'),
+  S3_REGION: z.string().default('ap-south-1'),
+  S3_BUCKET: z.string().optional(),
+  S3_ENDPOINT: z.preprocess((value) => value || undefined, z.url().optional()),
+  S3_ACCESS_KEY: z.string().optional(),
+  S3_SECRET_KEY: z.string().optional(),
+
   JWT_ACCESS_SECRET: secret,
   JWT_REFRESH_SECRET: secret,
   OTP_HMAC_SECRET: secret,

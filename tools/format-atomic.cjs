@@ -12,6 +12,7 @@ const excluded = new Set([
   '.codex',
   '.agents',
   '.aws',
+  '.rentmate-private',
 ]);
 function files(directory) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
@@ -32,12 +33,19 @@ async function format() {
     const temporary = `${file}.format-${process.pid}`;
     try {
       fs.writeFileSync(temporary, output);
-      fs.renameSync(temporary, file);
+      try {
+        fs.renameSync(temporary, file);
+      } catch (error) {
+        if (error.code !== 'EPERM') throw error;
+        fs.writeFileSync(file, output);
+      }
     } finally {
       if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
     }
   }
-  process.stdout.write('Prettier formatting completed using atomic file replacement.\n');
+  process.stdout.write(
+    'Prettier formatting completed (atomic replacement, direct-write fallback on managed Windows files).\n',
+  );
 }
 void format().catch(() => {
   process.stderr.write('Formatting failed.\n');

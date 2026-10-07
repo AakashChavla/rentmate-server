@@ -13,3 +13,4 @@ src/lib/api/schema.d.ts
 tools/codegen/templates
 
 .yarn
+.rentmate-private

@@ -1,5 +1,6 @@
 .git
 node_modules
+.rentmate-private
 dist
 .env*
 !.env.example

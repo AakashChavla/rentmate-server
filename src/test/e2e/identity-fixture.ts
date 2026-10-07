@@ -26,7 +26,7 @@ export interface FixtureAccount {
 export class IdentityFixture {
   public app!: INestApplication;
   public readonly mail = new FakeAuthEmail();
-  private readonly orgs = new Set<string>();
+  protected readonly orgs = new Set<string>();
   public async start(): Promise<void> {
     const module = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(EmailProvider)

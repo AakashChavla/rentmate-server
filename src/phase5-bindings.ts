@@ -1,0 +1,69 @@
+import { UnitLeaseDirectory } from './modules/units';
+import { LeaseSweep } from './modules/leases/lease-sweep.contract';
+import { TypeOrmLeaseSweep } from './modules/leases/typeorm-lease-sweep.repository';
+import { TenantRepository } from './modules/tenants';
+import { KycDocumentDirectory } from './modules/tenants';
+import { TypeOrmTenantRepository } from './modules/tenants/typeorm-tenant.repository';
+import { TenantPolicy } from './modules/tenants';
+import { DefaultTenantPolicy } from './modules/tenants/default-tenant-policy.service';
+import { TenantsService } from './modules/tenants';
+import { DefaultTenantsService } from './modules/tenants/default-tenants.service';
+import { TenantInvitationLink } from './modules/organizations';
+import { DocumentRepository } from './modules/documents';
+import { TypeOrmDocumentRepository } from './modules/documents/typeorm-document.repository';
+import { DocumentsService } from './modules/documents';
+import { DefaultDocumentsService } from './modules/documents/default-documents.service';
+import { LeaseRepository } from './modules/leases';
+import { TypeOrmLeaseRepository } from './modules/leases/typeorm-lease.repository';
+import { LeasePolicy } from './modules/leases';
+import { DefaultLeasePolicy } from './modules/leases/default-lease-policy.service';
+import { LeaseEffects } from './modules/leases';
+import { DefaultLeaseEffects } from './modules/leases/default-lease-effects.service';
+import { LeaseLifecycle } from './modules/leases';
+import { DefaultLeaseLifecycle } from './modules/leases/default-lease-lifecycle.service';
+import { LeasesService } from './modules/leases';
+import { DefaultLeasesService } from './modules/leases/default-leases.service';
+import { LeaseExpiryJob } from './modules/leases';
+import { DefaultLeaseExpiryJob } from './modules/leases/default-lease-expiry.processor';
+import { LeaseOccupancy } from './modules/units';
+import { DefaultLeaseOccupancy } from './modules/units/default-lease-occupancy.service';
+import { FieldEncryptor } from './integrations/field-encryption/field-encryptor.contract';
+import { AesFieldEncryptor } from './integrations/field-encryption/adapters/aes/aes-field-encryptor';
+import { FileStorage } from './integrations/file-storage/file-storage.contract';
+import { ConfiguredFileStorage } from './integrations/file-storage/configured-file-storage';
+import { LocalFileStore } from './integrations/file-storage/configured-file-storage';
+import { LocalFileStorage } from './integrations/file-storage/adapters/local/local-file-storage';
+import { RemoteFileStore } from './integrations/file-storage/configured-file-storage';
+import { S3FileStorage } from './integrations/file-storage/adapters/s3/s3-file-storage';
+import { AntivirusScanner } from './integrations/file-storage/file-storage.contract';
+import { NoneAntivirusScanner } from './integrations/file-storage/adapters/none/none-antivirus-scanner';
+import { MultipartReader } from './integrations/multipart/multipart-reader.contract';
+import { BusboyMultipartReader } from './integrations/multipart/adapters/busboy/busboy-multipart-reader';
+import { TenantsController } from './modules/tenants/tenants.controller';
+import { DocumentsController } from './modules/documents/documents.controller';
+import { LeasesController } from './modules/leases/leases.controller';
+export const PHASE5_PROVIDERS = [
+  { provide: KycDocumentDirectory, useClass: TypeOrmDocumentRepository },
+  { provide: UnitLeaseDirectory, useClass: TypeOrmLeaseRepository },
+  { provide: LeaseSweep, useClass: TypeOrmLeaseSweep },
+  { provide: TenantRepository, useClass: TypeOrmTenantRepository },
+  { provide: TenantPolicy, useClass: DefaultTenantPolicy },
+  { provide: TenantsService, useClass: DefaultTenantsService },
+  { provide: TenantInvitationLink, useClass: TypeOrmTenantRepository },
+  { provide: DocumentRepository, useClass: TypeOrmDocumentRepository },
+  { provide: DocumentsService, useClass: DefaultDocumentsService },
+  { provide: LeaseRepository, useClass: TypeOrmLeaseRepository },
+  { provide: LeasePolicy, useClass: DefaultLeasePolicy },
+  { provide: LeaseEffects, useClass: DefaultLeaseEffects },
+  { provide: LeaseLifecycle, useClass: DefaultLeaseLifecycle },
+  { provide: LeasesService, useClass: DefaultLeasesService },
+  { provide: LeaseExpiryJob, useClass: DefaultLeaseExpiryJob },
+  { provide: LeaseOccupancy, useClass: DefaultLeaseOccupancy },
+  { provide: FieldEncryptor, useClass: AesFieldEncryptor },
+  { provide: FileStorage, useClass: ConfiguredFileStorage },
+  { provide: LocalFileStore, useClass: LocalFileStorage },
+  { provide: RemoteFileStore, useClass: S3FileStorage },
+  { provide: AntivirusScanner, useClass: NoneAntivirusScanner },
+  { provide: MultipartReader, useClass: BusboyMultipartReader },
+];
+export const PHASE5_CONTROLLERS = [TenantsController, DocumentsController, LeasesController];

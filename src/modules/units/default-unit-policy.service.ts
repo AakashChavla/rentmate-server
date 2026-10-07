@@ -5,7 +5,7 @@ import { PermissionChecker } from '../authorization';
 import { AppException } from '../../core/errors/app-exception';
 import { ErrorCode } from '../../core/errors/error-code.constants';
 import { PROPERTY_STATUS } from '../../shared/property.constants';
-import { UNIT_PERMISSION as P } from '../../shared/unit.constants';
+import { READ_PERMISSION_SUFFIX } from '../../shared/unit.constants';
 import type { PermissionContext } from '../../shared/identity.types';
 @Injectable()
 export class DefaultUnitPolicy extends UnitPolicy {
@@ -24,7 +24,10 @@ export class DefaultUnitPolicy extends UnitPolicy {
     const property = await this.properties.get(actor.organization.id, id);
     if (!property) throw new AppException(ErrorCode.NOT_FOUND);
     this.require(actor, permission, id);
-    if (permission !== P.READ && property.status === PROPERTY_STATUS.ARCHIVED)
+    if (
+      !permission.endsWith(READ_PERMISSION_SUFFIX) &&
+      property.status === PROPERTY_STATUS.ARCHIVED
+    )
       throw new AppException(ErrorCode.UNIT_IN_USE);
   }
   public override require(actor: PermissionContext, permission: string, id: string): void {

@@ -27,3 +27,5 @@ Client AuthProvider, AuthApi/UsersApi, PermissionGate/useCan/useHasPermission, A
 ## Phase 3 additions
 
 Reuse PropertyRepository/Service, OrganizationPropertyDirectory, InvitationRepository/Service/Policy and InvitationToken abstract ports. Preserve atomic JSONB configuration patches, organization cache versions, after-commit events, strict per-type Zod validation and composite scope constraints. Reuse PropertiesApi, OrganizationApi, InvitationsApi, PropertySelectionProvider, accessible-property queries, property wizard/config fields and TeamScopeFields. See [Phase 3 report](18-phase3-report.md).
+
+Phase 5 adds TenantPolicy, KycDocumentDirectory, FileStorage, FieldEncryptor, LeaseLifecycle, LeaseOccupancy and UnitLeaseDirectory ports; injected tenant/lease APIs and the shared rental query builder. See [Phase 5 report](20-phase5-report.md) for ownership, renewal and storage semantics.

@@ -1,3 +1,4 @@
+import { UnitLeaseDirectory } from '../units';
 import { Inject, Injectable } from '@nestjs/common';
 import { BedsService, BedRepository } from './beds.contract';
 import { UnitRepository, UnitPolicy, UnitEffects, UnitStateMachine } from '../units';
@@ -23,6 +24,7 @@ export class DefaultBedsService extends BedsService {
     @Inject(UnitEffects) private readonly effects: UnitEffects,
     @Inject(PropertyRepository) private readonly properties: PropertyRepository,
     @Inject(TransactionRunner) private readonly tx: TransactionRunner,
+    @Inject(UnitLeaseDirectory) private readonly leases: UnitLeaseDirectory,
   ) {
     super();
   }
@@ -83,6 +85,8 @@ export class DefaultBedsService extends BedsService {
       await this.units.lockProperty(org, bed.propertyId);
       await this.unit(actor, bed.unitId, P.DELETE);
       const current = await this.record(actor, id);
+      if (await this.leases.protectedTarget(org, current.unitId, id))
+        throw new AppException(ErrorCode.UNIT_IN_USE);
       if (current.status === S.OCCUPIED || current.status === S.RESERVED)
         throw new AppException(ErrorCode.UNIT_IN_USE);
       await this.repo.remove(org, id);
@@ -102,6 +106,11 @@ export class DefaultBedsService extends BedsService {
       await this.unit(actor, bed.unitId, P.UPDATE);
       const current = await this.repo.lock(org, id);
       if (!current) throw new AppException(ErrorCode.NOT_FOUND);
+      if (
+        input.status !== S.OCCUPIED &&
+        (await this.leases.protectedTarget(org, current.unitId, id))
+      )
+        throw new AppException(ErrorCode.UNIT_IN_USE);
       const status = new UnitStateMachine().transition(current.status, input);
       await this.repo.setStatus(org, id, status);
       await this.effects.changed({
