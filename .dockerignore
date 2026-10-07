@@ -8,3 +8,5 @@ dist
 
 .yarn
 .cache
+
+demo-accounts.local.md

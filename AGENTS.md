@@ -38,8 +38,12 @@ Strict TypeScript, no any/console/floating promises; max 300 lines/file, 50 line
 
 ## C9 Git
 
-Work on phase/0-charter, then phase/<n>-<slug> from the previous phase. Conventional Commits per logical step. Never push/amend/rewrite history or change remotes. Legacy snapshots/tags stay intact.
+Work on phase/0-charter, then phase/<n>-<slug> from the previous phase. Conventional Commits per logical step. Push only when the user explicitly authorizes it; never amend/rewrite history or change remotes. Legacy snapshots/tags stay intact.
 Pointers stay short and link to docs/ai. CLAUDE.md starts @AGENTS.md. rules:check enforces resolving references and <=10000-character files. Husky runs rules:check and lint-staged.
+
+## C10 Demo seed maintenance
+
+After every task, update the demo-seed maintenance record and keep fixtures/account documentation aligned with the current features, schema and roles. Extend realistic fictional scenarios when capabilities change. Verify changed seeds are repeatable and preserve unrelated data. Never include real identity/contact data or credentials in Git; never seed a production environment. See docs/ai/21-demo-seed-report.md.
 
 ## Commands and done
 

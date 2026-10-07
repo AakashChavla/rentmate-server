@@ -34,7 +34,8 @@
     "seed": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local tools/seeds/run.ts",
     "worker:dev": "tsx watch --env-file-if-exists=.env --env-file-if-exists=.env.local src/worker.ts",
     "auth-scope:check": "tsx tools/check-auth-scope.ts",
-    "audit": "yarn npm audit --all --recursive"
+    "audit": "yarn npm audit --all --recursive",
+    "seed:demo": "tsx --env-file-if-exists=.env --env-file-if-exists=.env.local tools/seeds/demo/run.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1146.0",

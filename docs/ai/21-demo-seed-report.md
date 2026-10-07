@@ -1,0 +1,7 @@
+# Demo seed maintenance
+
+Task: pre-Phase 6 realistic demo dataset. Seed implementation is split by capability under tools/seeds/demo; accounts and fixtures cover the current eight roles and Phases 2–5. See [demo accounts](../demo-accounts.md). Client changes and every future task must review this same server dataset and update this maintenance record, extending scenarios when functionality changes.
+
+The seed uses a transaction advisory lock, stable IDs, permission seeding, parameterized repository operations and private FileStorage/FieldEncryptor adapters. Production/S3 runs are rejected. Synthetic IDs are encrypted, PDFs are explicitly fictional and invitation tokens are discarded. Existing application data is preserved. Run twice to prove repeatability and exercise every account's login, manager scope and own-only tenant access.
+
+Validation: server lint, strict types, architecture and rules passed; client rule checks passed. Four real PostgreSQL/Redis HTTP tests prove concurrent repeatability, all-role login, property/own-only access, encrypted IDs/private downloads, production rejection and preservation of edited/unrelated records. The local API container was seeded; all eight local demo logins and the tenant private-document download returned 200. No email was sent. Credentials remain ignored in demo-accounts.local.md. The user's explicit instruction authorizes pushing this seed commit in both repositories. Earlier phase reports retain their historical no-push records.

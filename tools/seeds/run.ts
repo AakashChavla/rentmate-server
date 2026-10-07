@@ -8,6 +8,7 @@ import {
   PASSWORD_POLICY,
 } from '../../src/shared/identity.constants';
 import { seedStatements } from './permissions';
+import { seedDemo } from './demo/seed-demo';
 import { OrganizationEntity } from '../../src/modules/organizations/organization.entity';
 import { UserEntity } from '../../src/modules/users/user.entity';
 import { UserRoleAssignmentEntity } from '../../src/modules/authorization/user-role-assignment.entity';
@@ -73,14 +74,7 @@ async function seed(): Promise<void> {
         adminPassword,
       );
     if (config.get('NODE_ENV') === 'development' && process.env.DEMO_SEED_PASSWORD) {
-      const org = await organization('demo', 'RentMate Demo');
-      for (const role of Object.values(ROLE).filter((r) => r !== ROLE.SUPER_ADMIN))
-        await account(
-          org,
-          role,
-          `${role.toLowerCase()}@demo.rentmate.test`,
-          process.env.DEMO_SEED_PASSWORD,
-        );
+      await seedDemo(source, process.env.DEMO_SEED_PASSWORD);
     }
     process.stdout.write(
       'Idempotent permissions and configured accounts seeded. Credentials were not printed.\n',
